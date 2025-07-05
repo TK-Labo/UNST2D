@@ -1,9 +1,13 @@
 # UNST2D
 
 ## Introduction
-このプロジェクトでは、非構造格子二次元不定流モデル (UNST2D: Unstructured grid 2D unsteady flow model) に、下水道・圃場整備エリア、田んぼダム、樹林帯（防備林）、連続盛土、一次元河道などの要素モデルを追加し、内水外水を同時に考慮したうえで流域治水対策の効果を見える化するためのモデルを開発しています。国立研究開発法人土木研究所が公開する降雨流出氾濫（RRI）モデルのほか分布型流出モデル等の出力を計算領域の外縁に与えることも可能です。
-
-In this project, we are developing a model to visualize the effects of river basin flood control measures by adding element models such as sewerage and farmland improvement areas, rice paddy dams, forest belts (defensive forests), continuous embankments, and one-dimensional river channels to the Unstructured Grid 2D Unsteady Flow Model (UNST2D). It is also possible to provide the output of the Rainfall-Runoff-Inundation (RRI) model released by the Public Works Research Institute, as well as distributed runoff models, to the outer edge of the calculation domain.
+このプロジェクトでは、非構造格子二次元不定流モデル (UNST2D: Unstructured grid 2D unsteady flow model) に、下水道・圃場整備エリア、田んぼダム、樹林帯（防備林）、連続盛土、一次元河道などの要素モデルを追加し、内水外水を同時に考慮したうえで流域治水対策の効果を見える化するためのモデルを開発しています。  
+  
+国立研究開発法人土木研究所が公開する降雨流出氾濫（RRI）モデルのほか分布型流出モデル等の出力を境界条件として計算領域の外縁に与えることができます。
+  
+In this project, we are developing a model to visualize the effects of river basin flood control measures by adding element models such as sewerage and farmland improvement areas, rice paddy dams, forest belts (defensive forests), continuous embankments, and one-dimensional river channels to the Unstructured Grid 2D Unsteady Flow Model (UNST2D).   
+  
+It is also possible to provide the output of the Rainfall-Runoff-Inundation (RRI) model released by the Public Works Research Institute, as well as distributed runoff models, to the outer edge of the calculation domain.
 
 ## Citation
 このコードを利用した計算結果の公表・頒布に際しては、以下の論文を引用してください。  
@@ -40,8 +44,9 @@ make
 ```
   
 ## Run  
-必要な入力ファイルを準備した後、以下のコマンドを実行すると計算が始まります:
+必要な入力ファイルを準備した後、以下のコマンドを実行すると計算が始まります:  
 After preparing the necessary input files, run the following command to start the calculation:
+
 ```bash
 ./RRI_UNST.exe
 ```
