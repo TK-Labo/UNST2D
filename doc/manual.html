@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.23">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>RRI+UNST</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="manual_files/libs/clipboard/clipboard.min.js"></script>
+<script src="manual_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="manual_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="manual_files/libs/quarto-html/popper.min.js"></script>
+<script src="manual_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="manual_files/libs/quarto-html/anchor.min.js"></script>
+<link href="manual_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="manual_files/libs/quarto-html/quarto-syntax-highlighting-226bd0f977fa82dfae4534cac220d79a.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="manual_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="manual_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="manual_files/libs/bootstrap/bootstrap-be9206a58a27969b3ea3001da8f26fef.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#統合モデル洪水流" id="toc-統合モデル洪水流" class="nav-link active" data-scroll-target="#統合モデル洪水流"><span class="header-section-number">1</span> 統合モデル（洪水流）</a></li>
+  <li><a href="#目次" id="toc-目次" class="nav-link" data-scroll-target="#目次"><span class="header-section-number">2</span> 目次</a></li>
+  <li><a href="#はじめに" id="toc-はじめに" class="nav-link" data-scroll-target="#はじめに"><span class="header-section-number">3</span> はじめに</a>
+  <ul class="collapse">
+  <li><a href="#更新履歴" id="toc-更新履歴" class="nav-link" data-scroll-target="#更新履歴"><span class="header-section-number">3.1</span> 更新履歴</a></li>
+  </ul></li>
+  <li><a href="#モデル概要" id="toc-モデル概要" class="nav-link" data-scroll-target="#モデル概要"><span class="header-section-number">4</span> モデル概要</a>
+  <ul class="collapse">
+  <li><a href="#実行環境使用ソフト" id="toc-実行環境使用ソフト" class="nav-link" data-scroll-target="#実行環境使用ソフト"><span class="header-section-number">4.1</span> 1. 実行環境・使用ソフト</a></li>
+  <li><a href="#rri" id="toc-rri" class="nav-link" data-scroll-target="#rri"><span class="header-section-number">4.2</span> 2. RRI</a>
+  <ul class="collapse">
+  <li><a href="#rriとは" id="toc-rriとは" class="nav-link" data-scroll-target="#rriとは"><span class="header-section-number">4.2.1</span> 2.1. RRIとは</a></li>
+  <li><a href="#ファイル構成" id="toc-ファイル構成" class="nav-link" data-scroll-target="#ファイル構成"><span class="header-section-number">4.2.2</span> 2.2. ファイル構成</a></li>
+  <li><a href="#参考文献" id="toc-参考文献" class="nav-link" data-scroll-target="#参考文献"><span class="header-section-number">4.2.3</span> 参考文献</a></li>
+  </ul></li>
+  <li><a href="#unst" id="toc-unst" class="nav-link" data-scroll-target="#unst"><span class="header-section-number">4.3</span> 3. UNST</a>
+  <ul class="collapse">
+  <li><a href="#unstとは" id="toc-unstとは" class="nav-link" data-scroll-target="#unstとは"><span class="header-section-number">4.3.1</span> 3.1. UNSTとは</a></li>
+  <li><a href="#基礎式" id="toc-基礎式" class="nav-link" data-scroll-target="#基礎式"><span class="header-section-number">4.3.2</span> 3.2. 基礎式</a></li>
+  </ul></li>
+  <li><a href="#統合モデル-rri-unst洪水流" id="toc-統合モデル-rri-unst洪水流" class="nav-link" data-scroll-target="#統合モデル-rri-unst洪水流"><span class="header-section-number">4.4</span> 4. 統合モデル （RRI + UNST洪水流）</a></li>
+  <li><a href="#統合モデル-rri-unst-洪水流とは" id="toc-統合モデル-rri-unst-洪水流とは" class="nav-link" data-scroll-target="#統合モデル-rri-unst-洪水流とは"><span class="header-section-number">4.5</span> 4.1. 統合モデル RRI + UNST 洪水流とは</a></li>
+  <li><a href="#ファイル構成-1" id="toc-ファイル構成-1" class="nav-link" data-scroll-target="#ファイル構成-1"><span class="header-section-number">4.6</span> 4.2. ファイル構成</a></li>
+  <li><a href="#unstインプットデータ" id="toc-unstインプットデータ" class="nav-link" data-scroll-target="#unstインプットデータ"><span class="header-section-number">4.7</span> 5. UNSTインプットデータ</a></li>
+  <li><a href="#必須データ" id="toc-必須データ" class="nav-link" data-scroll-target="#必須データ"><span class="header-section-number">4.8</span> 5.1. 必須データ</a>
+  <ul class="collapse">
+  <li><a href="#計算格子node.datlink.datmesh.dat" id="toc-計算格子node.datlink.datmesh.dat" class="nav-link" data-scroll-target="#計算格子node.datlink.datmesh.dat"><span class="header-section-number">4.8.1</span> 5.1.1. 計算格子：node.dat，link.dat，mesh.dat</a></li>
+  <li><a href="#標高値bs.dat" id="toc-標高値bs.dat" class="nav-link" data-scroll-target="#標高値bs.dat"><span class="header-section-number">4.8.2</span> 5.1.2. 標高値：bs.dat</a></li>
+  <li><a href="#格子属性inf.dat" id="toc-格子属性inf.dat" class="nav-link" data-scroll-target="#格子属性inf.dat"><span class="header-section-number">4.8.3</span> 5.1.3. 格子属性：inf.dat</a></li>
+  <li><a href="#粗度係数rn.dat" id="toc-粗度係数rn.dat" class="nav-link" data-scroll-target="#粗度係数rn.dat"><span class="header-section-number">4.8.4</span> 5.1.4. 粗度係数：rn.dat</a></li>
+  <li><a href="#降雨rain.dat" id="toc-降雨rain.dat" class="nav-link" data-scroll-target="#降雨rain.dat"><span class="header-section-number">4.8.5</span> 5.1.5. 降雨：rain.dat</a></li>
+  <li><a href="#降雨-座標対応表mesh2ij.dat" id="toc-降雨-座標対応表mesh2ij.dat" class="nav-link" data-scroll-target="#降雨-座標対応表mesh2ij.dat"><span class="header-section-number">4.8.6</span> 5.1.6. 降雨-座標対応表：mesh2ij.dat</a></li>
+  <li><a href="#流入量qin.dat" id="toc-流入量qin.dat" class="nav-link" data-scroll-target="#流入量qin.dat"><span class="header-section-number">4.8.7</span> 5.1.7. 流入量：qin.dat</a></li>
+  </ul></li>
+  <li><a href="#植生抵抗データ" id="toc-植生抵抗データ" class="nav-link" data-scroll-target="#植生抵抗データ"><span class="header-section-number">4.9</span> 5.2. 植生抵抗データ</a>
+  <ul class="collapse">
+  <li><a href="#倒伏を考慮しない植生抵抗モデルplanta.datplantd.dat" id="toc-倒伏を考慮しない植生抵抗モデルplanta.datplantd.dat" class="nav-link" data-scroll-target="#倒伏を考慮しない植生抵抗モデルplanta.datplantd.dat"><span class="header-section-number">4.9.1</span> 5.2.1. 倒伏を考慮しない植生抵抗モデル：planta.dat，plantD.dat</a></li>
+  <li><a href="#倒伏を考慮する植生抵抗モデルplantf.datplantn.dat" id="toc-倒伏を考慮する植生抵抗モデルplantf.datplantn.dat" class="nav-link" data-scroll-target="#倒伏を考慮する植生抵抗モデルplantf.datplantn.dat"><span class="header-section-number">4.9.2</span> 5.2.2. 倒伏を考慮する植生抵抗モデル：plantF.dat，plantN.dat</a></li>
+  </ul></li>
+  <li><a href="#田んぼダムデータ" id="toc-田んぼダムデータ" class="nav-link" data-scroll-target="#田んぼダムデータ"><span class="header-section-number">4.10</span> 5.3. 田んぼダムデータ</a>
+  <ul class="collapse">
+  <li><a href="#田んぼ-idpaddy.dat" id="toc-田んぼ-idpaddy.dat" class="nav-link" data-scroll-target="#田んぼ-idpaddy.dat"><span class="header-section-number">4.10.1</span> 5.3.1. 田んぼ id：paddy.dat</a></li>
+  <li><a href="#排水関連パラメータpqout.dat" id="toc-排水関連パラメータpqout.dat" class="nav-link" data-scroll-target="#排水関連パラメータpqout.dat"><span class="header-section-number">4.10.2</span> 5.3.2. 排水関連パラメータ：pqout.dat</a></li>
+  <li><a href="#田んぼダムパラメータpaddy_param.dat" id="toc-田んぼダムパラメータpaddy_param.dat" class="nav-link" data-scroll-target="#田んぼダムパラメータpaddy_param.dat"><span class="header-section-number">4.10.3</span> 5.3.3. 田んぼダムパラメータ：paddy_param.dat</a></li>
+  </ul></li>
+  <li><a href="#下水道圃場データ" id="toc-下水道圃場データ" class="nav-link" data-scroll-target="#下水道圃場データ"><span class="header-section-number">4.11</span> 5.4. 下水道・圃場データ</a>
+  <ul class="collapse">
+  <li><a href="#下水道圃場-idinf_dr.dat" id="toc-下水道圃場-idinf_dr.dat" class="nav-link" data-scroll-target="#下水道圃場-idinf_dr.dat"><span class="header-section-number">4.11.1</span> 5.4.1. 下水道・圃場 id：inf_dr.dat</a></li>
+  <li><a href="#下水道圃場パラメータdrain.dat" id="toc-下水道圃場パラメータdrain.dat" class="nav-link" data-scroll-target="#下水道圃場パラメータdrain.dat"><span class="header-section-number">4.11.2</span> 5.4.2. 下水道・圃場パラメータ：drain.dat</a></li>
+  </ul></li>
+  <li><a href="#その他" id="toc-その他" class="nav-link" data-scroll-target="#その他"><span class="header-section-number">4.12</span> 5.5. その他</a>
+  <ul class="collapse">
+  <li><a href="#線盛土morido.dat未検証" id="toc-線盛土morido.dat未検証" class="nav-link" data-scroll-target="#線盛土morido.dat未検証"><span class="header-section-number">4.12.1</span> 5.5.1. 線盛土：morido.dat（未検証）</a></li>
+  <li><a href="#排水処理境界dsmesh.dat開発中" id="toc-排水処理境界dsmesh.dat開発中" class="nav-link" data-scroll-target="#排水処理境界dsmesh.dat開発中"><span class="header-section-number">4.12.2</span> 5.5.2. 排水処理（境界）：dsmesh.dat（開発中）</a></li>
+  <li><a href="#カルバート樋門樋管ポンプdrfacility.dat-調整中" id="toc-カルバート樋門樋管ポンプdrfacility.dat-調整中" class="nav-link" data-scroll-target="#カルバート樋門樋管ポンプdrfacility.dat-調整中"><span class="header-section-number">4.12.3</span> 5.5.3. カルバート・樋門（樋管）・ポンプ：drfacility.dat （調整中）</a></li>
+  <li><a href="#浸透モデルunst_infilt.dat" id="toc-浸透モデルunst_infilt.dat" class="nav-link" data-scroll-target="#浸透モデルunst_infilt.dat"><span class="header-section-number">4.12.4</span> 5.5.4. 浸透モデル：unst_infilt.dat</a></li>
+  </ul></li>
+  <li><a href="#rricuiの実行" id="toc-rricuiの実行" class="nav-link" data-scroll-target="#rricuiの実行"><span class="header-section-number">4.13</span> 6. RRI（CUI）の実行</a></li>
+  <li><a href="#rri_input-ファイルの管理" id="toc-rri_input-ファイルの管理" class="nav-link" data-scroll-target="#rri_input-ファイルの管理"><span class="header-section-number">4.14</span> 6.1. RRI_Input ファイルの管理</a></li>
+  <li><a href="#実行" id="toc-実行" class="nav-link" data-scroll-target="#実行"><span class="header-section-number">4.15</span> 6.2. 実行</a></li>
+  <li><a href="#unstの実行" id="toc-unstの実行" class="nav-link" data-scroll-target="#unstの実行"><span class="header-section-number">4.16</span> 7. UNSTの実行</a></li>
+  <li><a href="#cntl-ファイルの管理" id="toc-cntl-ファイルの管理" class="nav-link" data-scroll-target="#cntl-ファイルの管理"><span class="header-section-number">4.17</span> 7.1. cntl ファイルの管理</a></li>
+  <li><a href="#実行-1" id="toc-実行-1" class="nav-link" data-scroll-target="#実行-1"><span class="header-section-number">4.18</span> 7.2. 実行</a></li>
+  <li><a href="#統合モデル-rri-unst洪水流の実行" id="toc-統合モデル-rri-unst洪水流の実行" class="nav-link" data-scroll-target="#統合モデル-rri-unst洪水流の実行"><span class="header-section-number">4.19</span> 8. 統合モデル （RRI + UNST洪水流）の実行</a></li>
+  <li><a href="#cntl.datrri_input.txt-の管理" id="toc-cntl.datrri_input.txt-の管理" class="nav-link" data-scroll-target="#cntl.datrri_input.txt-の管理"><span class="header-section-number">4.20</span> 8.1. cntl.dat，RRI_Input.txt の管理</a></li>
+  <li><a href="#実行-2" id="toc-実行-2" class="nav-link" data-scroll-target="#実行-2"><span class="header-section-number">4.21</span> 8.2. 実行</a></li>
+  <li><a href="#出力結果" id="toc-出力結果" class="nav-link" data-scroll-target="#出力結果"><span class="header-section-number">4.22</span> 9. 出力結果</a></li>
+  <li><a href="#時系列別浸水深h.dath.csv" id="toc-時系列別浸水深h.dath.csv" class="nav-link" data-scroll-target="#時系列別浸水深h.dath.csv"><span class="header-section-number">4.23</span> 9.1. 時系列別浸水深：h.dat（h.csv）</a></li>
+  <li><a href="#最大浸水深hmax.dathmaxdata.csv" id="toc-最大浸水深hmax.dathmaxdata.csv" class="nav-link" data-scroll-target="#最大浸水深hmax.dathmaxdata.csv"><span class="header-section-number">4.24</span> 9.2. 最大浸水深：hmax.dat（hmaxdata.csv）</a></li>
+  <li><a href="#時系列別x方向の流速uum.dat" id="toc-時系列別x方向の流速uum.dat" class="nav-link" data-scroll-target="#時系列別x方向の流速uum.dat"><span class="header-section-number">4.25</span> 9.3. 時系列別x方向の流速：uum.dat</a></li>
+  <li><a href="#x方向の最大流速uummax.dat" id="toc-x方向の最大流速uummax.dat" class="nav-link" data-scroll-target="#x方向の最大流速uummax.dat"><span class="header-section-number">4.26</span> 9.4. x方向の最大流速：uummax.dat</a></li>
+  <li><a href="#時系列別y方向の流速vvm.dat" id="toc-時系列別y方向の流速vvm.dat" class="nav-link" data-scroll-target="#時系列別y方向の流速vvm.dat"><span class="header-section-number">4.27</span> 9.5. 時系列別y方向の流速：vvm.dat</a></li>
+  <li><a href="#y方向の最大流速vvmmax.dat" id="toc-y方向の最大流速vvmmax.dat" class="nav-link" data-scroll-target="#y方向の最大流速vvmmax.dat"><span class="header-section-number">4.28</span> 9.6. y方向の最大流速：vvmmax.dat</a></li>
+  <li><a href="#時系列別流量q.dat" id="toc-時系列別流量q.dat" class="nav-link" data-scroll-target="#時系列別流量q.dat"><span class="header-section-number">4.29</span> 9.7. 時系列別流量：q.dat</a></li>
+  <li><a href="#時系列別水収支unststrage.dat" id="toc-時系列別水収支unststrage.dat" class="nav-link" data-scroll-target="#時系列別水収支unststrage.dat"><span class="header-section-number">4.30</span> 9.8. 時系列別水収支：unststrage.dat</a></li>
+  <li><a href="#田んぼダム-時間遅れ排水量dhp.dat" id="toc-田んぼダム-時間遅れ排水量dhp.dat" class="nav-link" data-scroll-target="#田んぼダム-時間遅れ排水量dhp.dat"><span class="header-section-number">4.31</span> 9.9. 田んぼダム 時間遅れ排水量：dhp.dat</a></li>
+  <li><a href="#田んぼダム-田水深paddyh.dat" id="toc-田んぼダム-田水深paddyh.dat" class="nav-link" data-scroll-target="#田んぼダム-田水深paddyh.dat"><span class="header-section-number">4.32</span> 9.10. 田んぼダム 田水深：paddyh.dat</a></li>
+  <li><a href="#田んぼダム-流入量paddyq.dat" id="toc-田んぼダム-流入量paddyq.dat" class="nav-link" data-scroll-target="#田んぼダム-流入量paddyq.dat"><span class="header-section-number">4.33</span> 9.11. 田んぼダム 流入量：paddyq.dat</a></li>
+  <li><a href="#出力結果の可視化執筆中" id="toc-出力結果の可視化執筆中" class="nav-link" data-scroll-target="#出力結果の可視化執筆中"><span class="header-section-number">4.34</span> 10. 出力結果の可視化＜執筆中＞</a></li>
+  <li><a href="#図示" id="toc-図示" class="nav-link" data-scroll-target="#図示"><span class="header-section-number">4.35</span> 10.1. 図示</a>
+  <ul class="collapse">
+  <li><a href="#最大浸水深" id="toc-最大浸水深" class="nav-link" data-scroll-target="#最大浸水深"><span class="header-section-number">4.35.1</span> 10.1.1. 最大浸水深</a></li>
+  <li><a href="#最大流速" id="toc-最大流速" class="nav-link" data-scroll-target="#最大流速"><span class="header-section-number">4.35.2</span> 10.1.2. 最大流速</a></li>
+  <li><a href="#最大流体力" id="toc-最大流体力" class="nav-link" data-scroll-target="#最大流体力"><span class="header-section-number">4.35.3</span> 10.1.3. 最大流体力</a></li>
+  </ul></li>
+  <li><a href="#動画" id="toc-動画" class="nav-link" data-scroll-target="#動画"><span class="header-section-number">4.36</span> 10.2. 動画</a>
+  <ul class="collapse">
+  <li><a href="#浸水深流速流体力" id="toc-浸水深流速流体力" class="nav-link" data-scroll-target="#浸水深流速流体力"><span class="header-section-number">4.36.1</span> 10.2.1. 浸水深，流速，流体力</a></li>
+  </ul></li>
+  <li><a href="#関連コード一覧" id="toc-関連コード一覧" class="nav-link" data-scroll-target="#関連コード一覧"><span class="header-section-number">4.37</span> 11. 関連コード一覧</a>
+  <ul class="collapse">
+  <li><a href="#fortran" id="toc-fortran" class="nav-link" data-scroll-target="#fortran"><span class="header-section-number">4.37.1</span> 11.1. Fortran</a></li>
+  <li><a href="#python" id="toc-python" class="nav-link" data-scroll-target="#python"><span class="header-section-number">4.37.2</span> 11.2. Python</a></li>
+  </ul></li>
+  <li><a href="#おわりに" id="toc-おわりに" class="nav-link" data-scroll-target="#おわりに"><span class="header-section-number">4.38</span> 12. おわりに</a></li>
+  <li><a href="#付録" id="toc-付録" class="nav-link" data-scroll-target="#付録"><span class="header-section-number">4.39</span> 13. 付録</a>
+  <ul class="collapse">
+  <li><a href="#python環境-導入方法" id="toc-python環境-導入方法" class="nav-link" data-scroll-target="#python環境-導入方法"><span class="header-section-number">4.39.1</span> 13.1. Python環境 導入方法</a></li>
+  <li><a href="#microsoft-visual-studiofortran環境-導入方法" id="toc-microsoft-visual-studiofortran環境-導入方法" class="nav-link" data-scroll-target="#microsoft-visual-studiofortran環境-導入方法"><span class="header-section-number">4.39.2</span> 13.2. Microsoft Visual Studio（Fortran環境） 導入方法</a></li>
+  <li><a href="#qgis-導入操作方法" id="toc-qgis-導入操作方法" class="nav-link" data-scroll-target="#qgis-導入操作方法"><span class="header-section-number">4.39.3</span> 13.3. QGIS 導入・操作方法</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="../manual.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">RRI+UNST</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="統合モデル洪水流" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> 統合モデル（洪水流）</h1>
+<p>RRI_UNST-2Dプログラムマニュアル</p>
+<p>Ver.0.0.0</p>
+<p>（2025.1）</p>
+</section>
+<section id="目次" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> 目次</h1>
+</section>
+<section id="はじめに" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> はじめに</h1>
+<p>本資料は統合モデル（RRI + UNST洪水流）の仕様書およびマニュアルである。モデルの概要や入出力データの形式などを解説する。</p>
+<p>入力データの作成方法例などは別資料の「統合モデル（RRI+UNST洪水流）インプットデータ作成例」を参照いただきたい。</p>
+<section id="更新履歴" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="更新履歴"><span class="header-section-number">3.1</span> 更新履歴</h2>
+</section>
+</section>
+<section id="モデル概要" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> モデル概要</h1>
+<section id="実行環境使用ソフト" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="実行環境使用ソフト"><span class="header-section-number">4.1</span> 1. 実行環境・使用ソフト</h2>
+</section>
+<section id="rri" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="rri"><span class="header-section-number">4.2</span> 2. RRI</h2>
+<section id="rriとは" class="level3" data-number="4.2.1">
+<h3 data-number="4.2.1" class="anchored" data-anchor-id="rriとは"><span class="header-section-number">4.2.1</span> 2.1. RRIとは</h3>
+</section>
+<section id="ファイル構成" class="level3" data-number="4.2.2">
+<h3 data-number="4.2.2" class="anchored" data-anchor-id="ファイル構成"><span class="header-section-number">4.2.2</span> 2.2. ファイル構成</h3>
+<p>RRIのプロジェクトフォルダの構成（最小構成）は以下の通りである。詳細はICHARMが提供するRRIのマニュアルを参照いただきたい。</p>
+<pre><code>RRIプロジェクトフォルダ
+├── topo
+│   ├── acc.txt
+│   ├── adem.txt
+│   └── adir.txt
+├── rain
+│   └── rain.dat
+├── out
+├── RRI_input.txt
+└── 0_rri_1_4_2_7.exe *</code></pre>
+<p>実行ファイル0_rri_1_4_2_7.exe（25/01時点）は以下のソースファイル群をコンパイルして作成する。ソースファイルはRRI-CUI &gt; source &gt; 1.4.2.7に格納されている。</p>
+<pre><code>source
+├── RRI.f90
+├── RRI_Bound.f90
+├── RRI_Break.f90
+├── RRI_Dam.f90
+├── RRI_Div.f90
+├── RRI_DT_Check.f90
+├── RRI_Evp.f90
+├── RRI_GW.f90
+├── RRI_Infilt.f90
+├── RRI_Mod.f90
+├── RRI_Mod2.f90
+├── RRI_Mod_Dam.f90
+├── RRI_Mod_Tecout.f90
+├── RRI_Read.f90
+├── RRI_Riv.f90
+├── RRI_RivSlo.f90
+├── RRI_Section.f90
+├── RRI_Slope.f90
+├── RRI_Sub.f90
+├── RRI_Tecout.f90
+└── RRI_TSAS.f90</code></pre>
+<p>Makefile</p>
+</section>
+<section id="参考文献" class="level3" data-number="4.2.3">
+<h3 data-number="4.2.3" class="anchored" data-anchor-id="参考文献"><span class="header-section-number">4.2.3</span> 参考文献</h3>
+<ol type="1">
+<li>ICHARM：降雨流出氾濫モデル（RRIモデル）＜https://www.pwri.go.jp/icharm/research/rri/index_j.html＞</li>
+</ol>
+</section>
+</section>
+<section id="unst" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="unst"><span class="header-section-number">4.3</span> 3. UNST</h2>
+<section id="unstとは" class="level3" data-number="4.3.1">
+<h3 data-number="4.3.1" class="anchored" data-anchor-id="unstとは"><span class="header-section-number">4.3.1</span> 3.1. UNSTとは</h3>
+<p>UNSTとは、川池1)により開発された、非構造格子を使用可能とする二次元氾濫解析モデルである。非構造格子とは、不規則な形状または配列を有する格子のことであり、構造格子では表現が困難な複雑な形状を表現可能とする（図3-1）。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="図3-1_構造格子と非構造格子.jpg" class="img-fluid figure-img"></p>
+<figcaption>構造格子と非構造格子</figcaption>
+</figure>
+</div>
+</section>
+<section id="基礎式" class="level3" data-number="4.3.2">
+<h3 data-number="4.3.2" class="anchored" data-anchor-id="基礎式"><span class="header-section-number">4.3.2</span> 3.2. 基礎式</h3>
+<p>UNSTの基礎式について解説する。詳細は川池1)を参照いただきたい。</p>
+<section id="二次元不定流計算" class="level4" data-number="4.3.2.1">
+<h4 data-number="4.3.2.1" class="anchored" data-anchor-id="二次元不定流計算"><span class="header-section-number">4.3.2.1</span> 二次元不定流計算</h4>
+<p>UNSTの二次元不定流計算の基礎式は以下の浅水方程式である。</p>
+<p><span class="math display">\[\frac{\partial h}{\partial t} + \frac{\partial M}{\partial x} + \frac{\partial N}{\partial y} = 0 \tag{1}\]</span></p>
+<p><span class="math display">\[\frac{\partial M}{\partial t} + \frac{\partial(uM)}{\partial x} + \frac{\partial(vM)}{\partial y} = -gh\frac{\partial H}{\partial x} - \frac{\tau_{bx}}{\rho_w} \tag{2}\]</span></p>
+<p><span class="math display">\[\frac{\partial N}{\partial t} + \frac{\partial(uN)}{\partial x} + \frac{\partial(vN)}{\partial y} = -gh\frac{\partial H}{\partial y} - \frac{\tau_{by}}{\rho_w} \tag{3}\]</span></p>
+<p><span class="math display">\[\tau_{bx} = \frac{\rho_w g n^2 u\sqrt{u^2+v^2}}{h^{1/3}} \tag{4}\]</span></p>
+<p><span class="math display">\[\tau_{by} = \frac{\rho_w g n^2 v\sqrt{u^2+v^2}}{h^{1/3}} \tag{5}\]</span></p>
+<p>ここで各変数は以下の通りである。</p>
+<p><span class="math inline">\(h\)</span>：水深、<span class="math inline">\(H\)</span>：水位、<span class="math inline">\(u\)</span>：<span class="math inline">\(x\)</span>方向の流速、<span class="math inline">\(v\)</span>：<span class="math inline">\(y\)</span>方向の流速<br>
+<span class="math inline">\(M\)</span>：<span class="math inline">\(x\)</span>方向の流量フラックス（<span class="math inline">\(M=uh\)</span>）<br>
+<span class="math inline">\(N\)</span>：<span class="math inline">\(y\)</span>方向の流量フラックス（<span class="math inline">\(N=vh\)</span>）<br>
+<span class="math inline">\(\tau_{bx}\)</span>：水底面でのせん断応力の<span class="math inline">\(x\)</span>方向成分<br>
+<span class="math inline">\(\tau_{by}\)</span>：水底面でのせん断応力の<span class="math inline">\(y\)</span>方向成分<br>
+<span class="math inline">\(\rho_w\)</span>：水の密度、<span class="math inline">\(n\)</span>：粗度係数、<span class="math inline">\(g\)</span>：重力加速度</p>
+<p>このとき各未知量は次のように定義される（図3-2）。</p>
+<ul>
+<li>全領域にデカルト座標軸（<span class="math inline">\(x\)</span>軸、<span class="math inline">\(y\)</span>軸）を設定</li>
+<li>デカルト座標系における各方向の流速<span class="math inline">\((u,v)\)</span>・流量フラックス<span class="math inline">\((M,N)\)</span>は格子境界（辺の中点）で定義</li>
+<li>水深<span class="math inline">\(h\)</span>は格子の図心（≒重心）で定義</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="図3-2_モデルの概要1.jpg" class="img-fluid figure-img"></p>
+<figcaption>モデルの概要1</figcaption>
+</figure>
+</div>
+<p>計算はLeap-Flog法を用いて陽的に進める。連続式の差分式は以下の式を用いる。</p>
+<p><span class="math display">\[\frac{h_i^{n+3/2} - h_i^{n+1/2}}{2\Delta t} + \frac{1}{A_i}\sum_{l=1}^{m_i}\{M_l^{n+1}(\Delta y)_l - N_l^{n+1}(\Delta x)_l\} = 0 \tag{6}\]</span></p>
+<p>ここで各変数は以下の通りである（図3-3）。なお、上付き添え字は時間ステップである。</p>
+<p><span class="math inline">\(h_i\)</span>：格子<span class="math inline">\(i\)</span>の水深<br>
+<span class="math inline">\(m_i\)</span>：格子<span class="math inline">\(i\)</span>を囲む辺の数<br>
+<span class="math inline">\(A_i\)</span>：検査面<span class="math inline">\(i\)</span><br>
+<span class="math inline">\(M_l\)</span>：辺<span class="math inline">\(l\)</span>上の<span class="math inline">\(x\)</span>方向の流量フラックス<br>
+<span class="math inline">\(N_l\)</span>：辺<span class="math inline">\(l\)</span>上の<span class="math inline">\(y\)</span>方向の流量フラックス<br>
+<span class="math inline">\((\Delta x)_l\)</span>：辺<span class="math inline">\(l\)</span>上での両端の点の<span class="math inline">\(x\)</span>座標の差<br>
+<span class="math inline">\((\Delta y)_l\)</span>：辺<span class="math inline">\(l\)</span>上での両端の点の<span class="math inline">\(y\)</span>座標の差</p>
+<p>運動量式について、格子<span class="math inline">\(i\)</span>と格子<span class="math inline">\(j\)</span>に挟まれた格子辺<span class="math inline">\(L\)</span>における計算には以下の差分式を用いる。</p>
+<p>（<span class="math inline">\(x\)</span>方向） <span class="math display">\[\frac{M_L^{n+2} - M_L^{n}}{2\Delta t} + T_1 + T_2 = -g\hat{h}_L (∇H)_x - \frac{gn^2_L \sqrt{(u_L^{n+1})^2+(v_L^{n+1})^2}u_L^{n+1}}{(\hat{h}_L^{n+1})^{4/3}} \tag{7}\]</span></p>
+<p>（<span class="math inline">\(y\)</span>方向） <span class="math display">\[\frac{N_L^{n+2} - N_L^{n}}{2\Delta t} + T_1 + T_2 = -g\hat{h}_L (∇H)_y - \frac{gn^2_L \sqrt{(u_L^{n+1})^2+(v_L^{n+1})^2}v_L^{n+1}}{(\hat{h}_L^{n+1})^{4/3}} \tag{8}\]</span></p>
+<p>ここで各変数は以下の通りである。</p>
+<p><span class="math inline">\(M_L\)</span>：格子辺<span class="math inline">\(L\)</span>上の<span class="math inline">\(x\)</span>方向の流量フラックス<br>
+<span class="math inline">\(N_L\)</span>：格子辺<span class="math inline">\(L\)</span>上の<span class="math inline">\(y\)</span>方向の流量フラックス<br>
+<span class="math inline">\((∇H)_x\)</span>：格子<span class="math inline">\(i\)</span>と格子<span class="math inline">\(j\)</span>間の水面勾配<span class="math inline">\(∇H\)</span>の<span class="math inline">\(x\)</span>方向成分<br>
+<span class="math inline">\((∇H)_y\)</span>：格子<span class="math inline">\(i\)</span>と格子<span class="math inline">\(j\)</span>間の水面勾配<span class="math inline">\(∇H\)</span>の<span class="math inline">\(y\)</span>方向成分<br>
+<span class="math inline">\(u_L\)</span>：格子辺<span class="math inline">\(L\)</span>上の<span class="math inline">\(x\)</span>方向の流速<br>
+<span class="math inline">\(v_L\)</span>：格子辺<span class="math inline">\(L\)</span>上の<span class="math inline">\(y\)</span>方向の流速<br>
+<span class="math inline">\(\hat{h}_L\)</span>：格子辺<span class="math inline">\(L\)</span>上の水深<br>
+<span class="math inline">\(T_1\)</span>, <span class="math inline">\(T_2\)</span>：(2)式の移流項（左辺第2項、第3項）<br>
+<span class="math inline">\(T_1\)</span>, <span class="math inline">\(T_2\)</span>：(3)式の移流項（左辺第2項、第3項）</p>
+<p>検査面について<span class="math inline">\(T_1+T_2\)</span>と<span class="math inline">\(T_1+T_2\)</span>は以下のように計算する。</p>
+<p><span class="math display">\[T_1+T_2 = \frac{1}{A_{cv}}\sum_{l=1}^{m'}\{(u_l\hat{M}_l)(\Delta y)_l-(v_l\hat{M}_l)(\Delta x)_l\} \tag{9}\]</span></p>
+<p><span class="math display">\[T_1+T_2 = \frac{1}{A_{cv}}\sum_{l=1}^{m'}\{(u_l\hat{N}_l)(\Delta y)_l-(v_l\hat{N}_l)(\Delta x)_l\} \tag{10}\]</span></p>
+<p>ここで各変数は以下の通りである。</p>
+<p><span class="math inline">\(A_{cv}\)</span>：検査面の面積（2格子の面積の和）<br>
+<span class="math inline">\(m'\)</span>：検査面を囲む辺の数<br>
+<span class="math inline">\(u_l\)</span>, <span class="math inline">\(v_l\)</span>：辺<span class="math inline">\(l\)</span>上での流速<br>
+<span class="math inline">\((\Delta x)_l\)</span>：辺<span class="math inline">\(l\)</span>の両端の点の<span class="math inline">\(x\)</span>座標の差<br>
+<span class="math inline">\((\Delta y)_l\)</span>：辺<span class="math inline">\(l\)</span>の両端の点の<span class="math inline">\(y\)</span>座標の差<br>
+<span class="math inline">\(\hat{M}\)</span>, <span class="math inline">\(\hat{N}\)</span>：格子の重心上の流量フラックス</p>
+<p>格子辺上の流速方向にしたがって上流側の補間流量フラックスを使用 <span class="math inline">\(\hat{M}\)</span>, <span class="math inline">\(\hat{N}\)</span>は格子辺上の流量フラックスから補間して求める。 <span class="math inline">\(m\)</span>角形の格子において、</p>
+<p><span class="math display">\[\hat{M} = \frac{\frac{1}{d_1}M_1+\cdots+\frac{1}{d_m}M_m}{\frac{1}{d_1}+\cdots+\frac{1}{d_m}} \tag{11}\]</span></p>
+<p><span class="math display">\[\hat{N} = \frac{\frac{1}{d_1}N_1+\cdots+\frac{1}{d_m}N_m}{\frac{1}{d_1}+\cdots+\frac{1}{d_m}} \tag{12}\]</span></p>
+<p>ここで各変数は以下の通りである。</p>
+<p><span class="math inline">\(d_1\)</span>, <span class="math inline">\(d_2\)</span>, …, <span class="math inline">\(d_m\)</span>：各辺の中点とこの格子の重心との距離<br>
+<span class="math inline">\(M_1\)</span>, <span class="math inline">\(M_2\)</span>, …, <span class="math inline">\(M_m\)</span>：各辺上の<span class="math inline">\(x\)</span>方向の流量フラックス<br>
+<span class="math inline">\(N_1\)</span>, <span class="math inline">\(N_2\)</span>, …, <span class="math inline">\(N_m\)</span>：各辺上の<span class="math inline">\(y\)</span>方向の流量フラックス</p>
+<p>格子<span class="math inline">\(i\)</span>と格子<span class="math inline">\(j\)</span>間の水面勾配<span class="math inline">\(∇H\)</span>の各方向成分<span class="math inline">\((∇H)_x\)</span>, <span class="math inline">\((∇H)_y\)</span>は以下のように計算する。</p>
+<p><span class="math display">\[(∇H)_x = \frac{H_j-H_i}{D_L} \cdot \frac{x_j-x_i}{D_L} \tag{13}\]</span></p>
+<p><span class="math display">\[(∇H)_y = \frac{H_j-H_i}{D_L} \cdot \frac{y_j-y_i}{D_L} \tag{14}\]</span></p>
+<p>ここで各変数は以下の通りである。</p>
+<p><span class="math inline">\(H_i\)</span>：格子<span class="math inline">\(i\)</span>の水位<br>
+<span class="math inline">\(H_j\)</span>：格子<span class="math inline">\(j\)</span>の水位<br>
+<span class="math inline">\((x_i,y_i)\)</span>：格子<span class="math inline">\(i\)</span>の図心の座標<br>
+<span class="math inline">\((x_j,y_j)\)</span>：格子<span class="math inline">\(j\)</span>の図心の座標<br>
+<span class="math inline">\(D_L\)</span>：格子<span class="math inline">\(i\)</span>と格子<span class="math inline">\(j\)</span>の図心間距離（<span class="math inline">\(D_L = \sqrt{(x_j-x_i)^2+(y_j-y_i)^2}\)</span>）</p>
+<p>また、格子辺上の水深<span class="math inline">\(\hat{h}_L\)</span>および粗度係数<span class="math inline">\(\hat{n}_L\)</span>は格子辺<span class="math inline">\(L\)</span>を形成する2つの格子（格子<span class="math inline">\(i\)</span>、格子<span class="math inline">\(j\)</span>）より補間して求める。格子の図心と辺<span class="math inline">\(L\)</span>の中点の距離の逆数に比例する形で補完する。</p>
+<p><span class="math display">\[\hat{h}_L = \frac{\frac{1}{d_i}h_i+\frac{1}{d_j}h_j}{\frac{1}{d_i}+\frac{1}{d_j}} = \frac{d_j h_i + d_i h_j}{d_i+d_j} \tag{15}\]</span></p>
+<p><span class="math display">\[\hat{n}_L = \frac{\frac{1}{d_i}n_i+\frac{1}{d_j}n_j}{\frac{1}{d_i}+\frac{1}{d_j}} = \frac{d_j n_i + d_i n_j}{d_i+d_j} \tag{16}\]</span></p>
+<p>ここで各変数は以下の通りである。</p>
+<p><span class="math inline">\(h_i\)</span>：格子<span class="math inline">\(i\)</span>の水深<br>
+<span class="math inline">\(h_j\)</span>：格子<span class="math inline">\(j\)</span>の水深<br>
+<span class="math inline">\(n_i\)</span>：格子<span class="math inline">\(i\)</span>の粗度係数<br>
+<span class="math inline">\(n_j\)</span>：格子<span class="math inline">\(j\)</span>の粗度係数<br>
+<span class="math inline">\(d_i\)</span>：格子<span class="math inline">\(i\)</span>の図心と辺<span class="math inline">\(L\)</span>の中点の距離<br>
+<span class="math inline">\(d_j\)</span>：格子<span class="math inline">\(j\)</span>の図心と辺<span class="math inline">\(L\)</span>の中点の距離</p>
+</section>
+</section>
+</section>
+<section id="統合モデル-rri-unst洪水流" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="統合モデル-rri-unst洪水流"><span class="header-section-number">4.4</span> 4. 統合モデル （RRI + UNST洪水流）</h2>
+</section>
+<section id="統合モデル-rri-unst-洪水流とは" class="level2" data-number="4.5">
+<h2 data-number="4.5" class="anchored" data-anchor-id="統合モデル-rri-unst-洪水流とは"><span class="header-section-number">4.5</span> 4.1. 統合モデル RRI + UNST 洪水流とは</h2>
+</section>
+<section id="ファイル構成-1" class="level2" data-number="4.6">
+<h2 data-number="4.6" class="anchored" data-anchor-id="ファイル構成-1"><span class="header-section-number">4.6</span> 4.2. ファイル構成</h2>
+</section>
+<section id="unstインプットデータ" class="level2" data-number="4.7">
+<h2 data-number="4.7" class="anchored" data-anchor-id="unstインプットデータ"><span class="header-section-number">4.7</span> 5. UNSTインプットデータ</h2>
+</section>
+<section id="必須データ" class="level2" data-number="4.8">
+<h2 data-number="4.8" class="anchored" data-anchor-id="必須データ"><span class="header-section-number">4.8</span> 5.1. 必須データ</h2>
+<section id="計算格子node.datlink.datmesh.dat" class="level3" data-number="4.8.1">
+<h3 data-number="4.8.1" class="anchored" data-anchor-id="計算格子node.datlink.datmesh.dat"><span class="header-section-number">4.8.1</span> 5.1.1. 計算格子：node.dat，link.dat，mesh.dat</h3>
+</section>
+<section id="標高値bs.dat" class="level3" data-number="4.8.2">
+<h3 data-number="4.8.2" class="anchored" data-anchor-id="標高値bs.dat"><span class="header-section-number">4.8.2</span> 5.1.2. 標高値：bs.dat</h3>
+</section>
+<section id="格子属性inf.dat" class="level3" data-number="4.8.3">
+<h3 data-number="4.8.3" class="anchored" data-anchor-id="格子属性inf.dat"><span class="header-section-number">4.8.3</span> 5.1.3. 格子属性：inf.dat</h3>
+</section>
+<section id="粗度係数rn.dat" class="level3" data-number="4.8.4">
+<h3 data-number="4.8.4" class="anchored" data-anchor-id="粗度係数rn.dat"><span class="header-section-number">4.8.4</span> 5.1.4. 粗度係数：rn.dat</h3>
+</section>
+<section id="降雨rain.dat" class="level3" data-number="4.8.5">
+<h3 data-number="4.8.5" class="anchored" data-anchor-id="降雨rain.dat"><span class="header-section-number">4.8.5</span> 5.1.5. 降雨：rain.dat</h3>
+</section>
+<section id="降雨-座標対応表mesh2ij.dat" class="level3" data-number="4.8.6">
+<h3 data-number="4.8.6" class="anchored" data-anchor-id="降雨-座標対応表mesh2ij.dat"><span class="header-section-number">4.8.6</span> 5.1.6. 降雨-座標対応表：mesh2ij.dat</h3>
+</section>
+<section id="流入量qin.dat" class="level3" data-number="4.8.7">
+<h3 data-number="4.8.7" class="anchored" data-anchor-id="流入量qin.dat"><span class="header-section-number">4.8.7</span> 5.1.7. 流入量：qin.dat</h3>
+</section>
+</section>
+<section id="植生抵抗データ" class="level2" data-number="4.9">
+<h2 data-number="4.9" class="anchored" data-anchor-id="植生抵抗データ"><span class="header-section-number">4.9</span> 5.2. 植生抵抗データ</h2>
+<section id="倒伏を考慮しない植生抵抗モデルplanta.datplantd.dat" class="level3" data-number="4.9.1">
+<h3 data-number="4.9.1" class="anchored" data-anchor-id="倒伏を考慮しない植生抵抗モデルplanta.datplantd.dat"><span class="header-section-number">4.9.1</span> 5.2.1. 倒伏を考慮しない植生抵抗モデル：planta.dat，plantD.dat</h3>
+</section>
+<section id="倒伏を考慮する植生抵抗モデルplantf.datplantn.dat" class="level3" data-number="4.9.2">
+<h3 data-number="4.9.2" class="anchored" data-anchor-id="倒伏を考慮する植生抵抗モデルplantf.datplantn.dat"><span class="header-section-number">4.9.2</span> 5.2.2. 倒伏を考慮する植生抵抗モデル：plantF.dat，plantN.dat</h3>
+</section>
+</section>
+<section id="田んぼダムデータ" class="level2" data-number="4.10">
+<h2 data-number="4.10" class="anchored" data-anchor-id="田んぼダムデータ"><span class="header-section-number">4.10</span> 5.3. 田んぼダムデータ</h2>
+<section id="田んぼ-idpaddy.dat" class="level3" data-number="4.10.1">
+<h3 data-number="4.10.1" class="anchored" data-anchor-id="田んぼ-idpaddy.dat"><span class="header-section-number">4.10.1</span> 5.3.1. 田んぼ id：paddy.dat</h3>
+</section>
+<section id="排水関連パラメータpqout.dat" class="level3" data-number="4.10.2">
+<h3 data-number="4.10.2" class="anchored" data-anchor-id="排水関連パラメータpqout.dat"><span class="header-section-number">4.10.2</span> 5.3.2. 排水関連パラメータ：pqout.dat</h3>
+</section>
+<section id="田んぼダムパラメータpaddy_param.dat" class="level3" data-number="4.10.3">
+<h3 data-number="4.10.3" class="anchored" data-anchor-id="田んぼダムパラメータpaddy_param.dat"><span class="header-section-number">4.10.3</span> 5.3.3. 田んぼダムパラメータ：paddy_param.dat</h3>
+<pre><code>paddy_param.dat
+
+lh= 畦畔高（m）
+wh1= 水管理用堰板の高さ（m）
+wh2= 機能一体型の器具の高さ（m）
+ww1= 器具の切欠幅（m）
+ww2= 落水枡の排水口幅（m）
+ca= 器具の中心角（度）
+wtyp= 器具のタイプ 1:一体型 2:分離型 0:田んぼダムなし
+dld= 畦畔天端と器具上端の高さの差（m）
+dd= 器具の穴直径（m）
+dh= 田面から器具の穴中心までの高さ（m）
+p_data= 排水管の直径（m）
+ph= 排水管中心までの高さ（m）</code></pre>
+<p>例）</p>
+<pre><code>lh= 0.3
+wh1= 0.03
+wh2= 0.1
+ww1= 0.3
+ww2= 0.1
+ca= 45
+wtyp= 1
+dld= 0.1
+dd= 0.05
+dh= 0.3
+p_data= 0.15
+ph= 0.3</code></pre>
+<p>参考）</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="図5-5_田んぼダムパラメータ.jpg" class="img-fluid figure-img"></p>
+<figcaption>田んぼダム各種パラメータ（農林水産省 農村振興局 整備部：水田流出簡易計算プログラムVer.0.0（ryuuiki_tisui-3.xlsm 変数説明シート）より引用）</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="下水道圃場データ" class="level2" data-number="4.11">
+<h2 data-number="4.11" class="anchored" data-anchor-id="下水道圃場データ"><span class="header-section-number">4.11</span> 5.4. 下水道・圃場データ</h2>
+<section id="下水道圃場-idinf_dr.dat" class="level3" data-number="4.11.1">
+<h3 data-number="4.11.1" class="anchored" data-anchor-id="下水道圃場-idinf_dr.dat"><span class="header-section-number">4.11.1</span> 5.4.1. 下水道・圃場 id：inf_dr.dat</h3>
+</section>
+<section id="下水道圃場パラメータdrain.dat" class="level3" data-number="4.11.2">
+<h3 data-number="4.11.2" class="anchored" data-anchor-id="下水道圃場パラメータdrain.dat"><span class="header-section-number">4.11.2</span> 5.4.2. 下水道・圃場パラメータ：drain.dat</h3>
+</section>
+</section>
+<section id="その他" class="level2" data-number="4.12">
+<h2 data-number="4.12" class="anchored" data-anchor-id="その他"><span class="header-section-number">4.12</span> 5.5. その他</h2>
+<section id="線盛土morido.dat未検証" class="level3" data-number="4.12.1">
+<h3 data-number="4.12.1" class="anchored" data-anchor-id="線盛土morido.dat未検証"><span class="header-section-number">4.12.1</span> 5.5.1. 線盛土：morido.dat（未検証）</h3>
+</section>
+<section id="排水処理境界dsmesh.dat開発中" class="level3" data-number="4.12.2">
+<h3 data-number="4.12.2" class="anchored" data-anchor-id="排水処理境界dsmesh.dat開発中"><span class="header-section-number">4.12.2</span> 5.5.2. 排水処理（境界）：dsmesh.dat（開発中）</h3>
+</section>
+<section id="カルバート樋門樋管ポンプdrfacility.dat-調整中" class="level3" data-number="4.12.3">
+<h3 data-number="4.12.3" class="anchored" data-anchor-id="カルバート樋門樋管ポンプdrfacility.dat-調整中"><span class="header-section-number">4.12.3</span> 5.5.3. カルバート・樋門（樋管）・ポンプ：drfacility.dat （調整中）</h3>
+</section>
+<section id="浸透モデルunst_infilt.dat" class="level3" data-number="4.12.4">
+<h3 data-number="4.12.4" class="anchored" data-anchor-id="浸透モデルunst_infilt.dat"><span class="header-section-number">4.12.4</span> 5.5.4. 浸透モデル：unst_infilt.dat</h3>
+<p>浸透モデルのパラメータは以下の通りである。</p>
+<p><span class="math inline">\(unst_soildepth\)</span>：浸透モデルの適用深度（m） <span class="math inline">\(unst_ksv\)</span>：浸透モデルの透水係数（m/s） <span class="math inline">\(unst_infilt_limit\)</span>：浸透モデルの透水係数の上限値（m/s）</p>
+<p>インプットファイルのフォーマットは以下の通りである。</p>
+<pre><code>13
+inf　　粗度　土層圧　gamma    ksv    faif
+1   0.067d0 0.5d0 0.05d0 0.02d0 0.01d0  ! 氾濫域
+24  0.030d0   ! 河川
+63  0.035d0   ! 田んぼダムを考慮しない水田
+71  0.035d0   ! 田んぼダム(added by k.yamamura)
+25  0.025d0   ! ポンプ
+26  0.025d0   ! ため池
+31  0.067d0   ! 事務所
+32  0.067d0   ! 住宅
+4   0.067d0   ! 学校
+5   0.025d0   ! 公園
+6   0.035d0   ! 農地
+7   0.100d0   ! 山地
+8   0.043d0   ! 道路</code></pre>
+<p>粗度設定ファイルに、浸透モデルの適用深度、透水係数、透水係数の上限値を追加することで設定する。 今までの形式のファイルでも変更することなく、浸透モデルなしで使用できる。</p>
+</section>
+</section>
+<section id="rricuiの実行" class="level2" data-number="4.13">
+<h2 data-number="4.13" class="anchored" data-anchor-id="rricuiの実行"><span class="header-section-number">4.13</span> 6. RRI（CUI）の実行</h2>
+</section>
+<section id="rri_input-ファイルの管理" class="level2" data-number="4.14">
+<h2 data-number="4.14" class="anchored" data-anchor-id="rri_input-ファイルの管理"><span class="header-section-number">4.14</span> 6.1. RRI_Input ファイルの管理</h2>
+</section>
+<section id="実行" class="level2" data-number="4.15">
+<h2 data-number="4.15" class="anchored" data-anchor-id="実行"><span class="header-section-number">4.15</span> 6.2. 実行</h2>
+</section>
+<section id="unstの実行" class="level2" data-number="4.16">
+<h2 data-number="4.16" class="anchored" data-anchor-id="unstの実行"><span class="header-section-number">4.16</span> 7. UNSTの実行</h2>
+</section>
+<section id="cntl-ファイルの管理" class="level2" data-number="4.17">
+<h2 data-number="4.17" class="anchored" data-anchor-id="cntl-ファイルの管理"><span class="header-section-number">4.17</span> 7.1. cntl ファイルの管理</h2>
+</section>
+<section id="実行-1" class="level2" data-number="4.18">
+<h2 data-number="4.18" class="anchored" data-anchor-id="実行-1"><span class="header-section-number">4.18</span> 7.2. 実行</h2>
+</section>
+<section id="統合モデル-rri-unst洪水流の実行" class="level2" data-number="4.19">
+<h2 data-number="4.19" class="anchored" data-anchor-id="統合モデル-rri-unst洪水流の実行"><span class="header-section-number">4.19</span> 8. 統合モデル （RRI + UNST洪水流）の実行</h2>
+</section>
+<section id="cntl.datrri_input.txt-の管理" class="level2" data-number="4.20">
+<h2 data-number="4.20" class="anchored" data-anchor-id="cntl.datrri_input.txt-の管理"><span class="header-section-number">4.20</span> 8.1. cntl.dat，RRI_Input.txt の管理</h2>
+</section>
+<section id="実行-2" class="level2" data-number="4.21">
+<h2 data-number="4.21" class="anchored" data-anchor-id="実行-2"><span class="header-section-number">4.21</span> 8.2. 実行</h2>
+</section>
+<section id="出力結果" class="level2" data-number="4.22">
+<h2 data-number="4.22" class="anchored" data-anchor-id="出力結果"><span class="header-section-number">4.22</span> 9. 出力結果</h2>
+</section>
+<section id="時系列別浸水深h.dath.csv" class="level2" data-number="4.23">
+<h2 data-number="4.23" class="anchored" data-anchor-id="時系列別浸水深h.dath.csv"><span class="header-section-number">4.23</span> 9.1. 時系列別浸水深：h.dat（h.csv）</h2>
+</section>
+<section id="最大浸水深hmax.dathmaxdata.csv" class="level2" data-number="4.24">
+<h2 data-number="4.24" class="anchored" data-anchor-id="最大浸水深hmax.dathmaxdata.csv"><span class="header-section-number">4.24</span> 9.2. 最大浸水深：hmax.dat（hmaxdata.csv）</h2>
+</section>
+<section id="時系列別x方向の流速uum.dat" class="level2" data-number="4.25">
+<h2 data-number="4.25" class="anchored" data-anchor-id="時系列別x方向の流速uum.dat"><span class="header-section-number">4.25</span> 9.3. 時系列別x方向の流速：uum.dat</h2>
+</section>
+<section id="x方向の最大流速uummax.dat" class="level2" data-number="4.26">
+<h2 data-number="4.26" class="anchored" data-anchor-id="x方向の最大流速uummax.dat"><span class="header-section-number">4.26</span> 9.4. x方向の最大流速：uummax.dat</h2>
+</section>
+<section id="時系列別y方向の流速vvm.dat" class="level2" data-number="4.27">
+<h2 data-number="4.27" class="anchored" data-anchor-id="時系列別y方向の流速vvm.dat"><span class="header-section-number">4.27</span> 9.5. 時系列別y方向の流速：vvm.dat</h2>
+</section>
+<section id="y方向の最大流速vvmmax.dat" class="level2" data-number="4.28">
+<h2 data-number="4.28" class="anchored" data-anchor-id="y方向の最大流速vvmmax.dat"><span class="header-section-number">4.28</span> 9.6. y方向の最大流速：vvmmax.dat</h2>
+</section>
+<section id="時系列別流量q.dat" class="level2" data-number="4.29">
+<h2 data-number="4.29" class="anchored" data-anchor-id="時系列別流量q.dat"><span class="header-section-number">4.29</span> 9.7. 時系列別流量：q.dat</h2>
+</section>
+<section id="時系列別水収支unststrage.dat" class="level2" data-number="4.30">
+<h2 data-number="4.30" class="anchored" data-anchor-id="時系列別水収支unststrage.dat"><span class="header-section-number">4.30</span> 9.8. 時系列別水収支：unststrage.dat</h2>
+</section>
+<section id="田んぼダム-時間遅れ排水量dhp.dat" class="level2" data-number="4.31">
+<h2 data-number="4.31" class="anchored" data-anchor-id="田んぼダム-時間遅れ排水量dhp.dat"><span class="header-section-number">4.31</span> 9.9. 田んぼダム 時間遅れ排水量：dhp.dat</h2>
+</section>
+<section id="田んぼダム-田水深paddyh.dat" class="level2" data-number="4.32">
+<h2 data-number="4.32" class="anchored" data-anchor-id="田んぼダム-田水深paddyh.dat"><span class="header-section-number">4.32</span> 9.10. 田んぼダム 田水深：paddyh.dat</h2>
+</section>
+<section id="田んぼダム-流入量paddyq.dat" class="level2" data-number="4.33">
+<h2 data-number="4.33" class="anchored" data-anchor-id="田んぼダム-流入量paddyq.dat"><span class="header-section-number">4.33</span> 9.11. 田んぼダム 流入量：paddyq.dat</h2>
+</section>
+<section id="出力結果の可視化執筆中" class="level2" data-number="4.34">
+<h2 data-number="4.34" class="anchored" data-anchor-id="出力結果の可視化執筆中"><span class="header-section-number">4.34</span> 10. 出力結果の可視化＜執筆中＞</h2>
+</section>
+<section id="図示" class="level2" data-number="4.35">
+<h2 data-number="4.35" class="anchored" data-anchor-id="図示"><span class="header-section-number">4.35</span> 10.1. 図示</h2>
+<section id="最大浸水深" class="level3" data-number="4.35.1">
+<h3 data-number="4.35.1" class="anchored" data-anchor-id="最大浸水深"><span class="header-section-number">4.35.1</span> 10.1.1. 最大浸水深</h3>
+</section>
+<section id="最大流速" class="level3" data-number="4.35.2">
+<h3 data-number="4.35.2" class="anchored" data-anchor-id="最大流速"><span class="header-section-number">4.35.2</span> 10.1.2. 最大流速</h3>
+<p>最大流速の図示には各時系列のuumとvvmから流速を求めた後、最大値を抽出する必要がある。流速<span class="math inline">\(u\)</span>は以下の式で定義される。</p>
+<p><span class="math display">\[u(i,t)=\sqrt{uum(i,t)^2 + vvm(i,t)^2}\]</span></p>
+<p>最大流速算出後は最大浸水深と概ね同様である。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="図10-4_最大流速の可視化.jpg" class="img-fluid figure-img"></p>
+<figcaption>図10-4 最大流速の可視化</figcaption>
+</figure>
+</div>
+</section>
+<section id="最大流体力" class="level3" data-number="4.35.3">
+<h3 data-number="4.35.3" class="anchored" data-anchor-id="最大流体力"><span class="header-section-number">4.35.3</span> 10.1.3. 最大流体力</h3>
+<p>最大流体力の図示には最大流速同様、各時系列の流体力を算出後、最大値を抽出する必要がある。流体力<span class="math inline">\(u^2h\)</span>は以下の式で定義される。</p>
+<p><span class="math display">\[u^2h = (uum^2 + vvm^2) \times h\]</span></p>
+<p>最大流体力算出後は最大浸水深と概ね同様である。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="図10-5_最大流体力の可視化.jpg" class="img-fluid figure-img"></p>
+<figcaption>図10-5 最大流体力の可視化</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="動画" class="level2" data-number="4.36">
+<h2 data-number="4.36" class="anchored" data-anchor-id="動画"><span class="header-section-number">4.36</span> 10.2. 動画</h2>
+<section id="浸水深流速流体力" class="level3" data-number="4.36.1">
+<h3 data-number="4.36.1" class="anchored" data-anchor-id="浸水深流速流体力"><span class="header-section-number">4.36.1</span> 10.2.1. 浸水深，流速，流体力</h3>
+</section>
+</section>
+<section id="関連コード一覧" class="level2" data-number="4.37">
+<h2 data-number="4.37" class="anchored" data-anchor-id="関連コード一覧"><span class="header-section-number">4.37</span> 11. 関連コード一覧</h2>
+<section id="fortran" class="level3" data-number="4.37.1">
+<h3 data-number="4.37.1" class="anchored" data-anchor-id="fortran"><span class="header-section-number">4.37.1</span> 11.1. Fortran</h3>
+</section>
+<section id="python" class="level3" data-number="4.37.2">
+<h3 data-number="4.37.2" class="anchored" data-anchor-id="python"><span class="header-section-number">4.37.2</span> 11.2. Python</h3>
+</section>
+</section>
+<section id="おわりに" class="level2" data-number="4.38">
+<h2 data-number="4.38" class="anchored" data-anchor-id="おわりに"><span class="header-section-number">4.38</span> 12. おわりに</h2>
+</section>
+<section id="付録" class="level2" data-number="4.39">
+<h2 data-number="4.39" class="anchored" data-anchor-id="付録"><span class="header-section-number">4.39</span> 13. 付録</h2>
+<section id="python環境-導入方法" class="level3" data-number="4.39.1">
+<h3 data-number="4.39.1" class="anchored" data-anchor-id="python環境-導入方法"><span class="header-section-number">4.39.1</span> 13.1. Python環境 導入方法</h3>
+</section>
+<section id="microsoft-visual-studiofortran環境-導入方法" class="level3" data-number="4.39.2">
+<h3 data-number="4.39.2" class="anchored" data-anchor-id="microsoft-visual-studiofortran環境-導入方法"><span class="header-section-number">4.39.2</span> 13.2. Microsoft Visual Studio（Fortran環境） 導入方法</h3>
+</section>
+<section id="qgis-導入操作方法" class="level3" data-number="4.39.3">
+<h3 data-number="4.39.3" class="anchored" data-anchor-id="qgis-導入操作方法"><span class="header-section-number">4.39.3</span> 13.3. QGIS 導入・操作方法</h3>
+</section>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
