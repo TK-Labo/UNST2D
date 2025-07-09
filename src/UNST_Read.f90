@@ -42,7 +42,7 @@ subroutine unst_rdat
     read(10, 1002) dtq
     read(10, 1002) ocpy
     read(10, 1002) unstbeta
-    read(10, 1003) str_type
+    ! read(10, 1003) str_type  2507.廃止
     read(10, 1003) inls
     read(10, *)
 
