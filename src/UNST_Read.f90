@@ -126,14 +126,14 @@ subroutine unst_rdat
     read(10, *)
     read(10, *)
 
-    ! 遺伝的アルゴリズム set
-    read(10, 1003) ga
+    ! 遺伝的アルゴリズム set  2507 廃止予定
+    ! read(10, 1003) ga
     ! filename
-    read(10, 1009) fga
-    read(10, 1009) fpaddy_cluster
-    read(10,*) paddyclass
-    read(10, *)
-    read(10, *)
+    ! read(10, 1009) fga
+    ! read(10, 1009) fpaddy_cluster
+    ! read(10,*) paddyclass
+    ! read(10, *)
+    ! read(10, *)
 
     read(10, 1009) fh
     read(10, 1009) fhmx
@@ -213,11 +213,11 @@ subroutine unst_rdat
     if(morid==1) open(39, file = fmorid, action = 'read')
     open(40, file = frn, action = 'read')
 
-    ! 遺伝的アルゴリズム add
-    if(ga==1) then
-        open(41, file = fga, action = 'read')
-        open(42, file = fpaddy_cluster, action = 'read')
-    endif
+    ! 遺伝的アルゴリズム add  2507 廃止予定
+    ! if(ga==1) then
+    !     open(41, file = fga, action = 'read')
+    !     open(42, file = fpaddy_cluster, action = 'read')
+    ! endif
 
     ! output file set
     if(d1riv==1) open(81, file = fsuii, action = 'write')
@@ -707,22 +707,22 @@ subroutine paddydat
     endif
     close(33)
 
-    ! 遺伝的アルゴリズム　add
-    if(ga==1) then
-        allocate( genes(paddyclass) )
-        read(41, *) (genes(pa), pa = 1, paddyclass)
-        close(41)
+    ! 遺伝的アルゴリズム　add  2507 廃止予定
+    ! if(ga==1) then
+    !    allocate( genes(paddyclass) )
+    !    read(41, *) (genes(pa), pa = 1, paddyclass)
+    !    close(41)
     
-        allocate( paddycluster(mesh) )
-        do me = 1, mesh
-            read(42,*) paddycluster(me)
-            if(paddycluster(me) > 0) then
-                device(paddyid(me)) = genes(paddycluster(me))
-            endif
-        enddo
-        close(42)
-        deallocate(paddycluster)
-    endif
+    !    allocate( paddycluster(mesh) )
+    !    do me = 1, mesh
+    !        read(42,*) paddycluster(me)
+    !        if(paddycluster(me) > 0) then
+    !            device(paddyid(me)) = genes(paddycluster(me))
+    !        endif
+    !    enddo
+    !    close(42)
+    !    deallocate(paddycluster)
+    ! endif
     
     ! paddy field parameters
     read(36, 1361) lh           ! 畦畔高
