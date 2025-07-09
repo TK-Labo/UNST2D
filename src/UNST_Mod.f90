@@ -80,7 +80,8 @@ real(8), allocatable :: ha(:,:), hr(:,:)
 integer, allocatable :: mnd(:), nd(:,:)
 real(8), allocatable :: qhyd(:,:), hhyd(:,:)
 integer, allocatable :: kkousi(:), kkasen(:)
-integer str_type, count1, count2, count3, count4
+integer, parameter :: str_type = 0  ! 2507 廃止予定
+integer count1, count2, count3, count4
 real(8), allocatable :: unstc(:), co(:), cr(:), str(:), stro(:), strmx(:)
 real(8) qout, dvr, vrain, sv0, v_minus_all, v_minus(100), phi(100)
 real(8) svc, v_cminus, v_cplus, v_cextre !tracer
@@ -104,7 +105,7 @@ integer, allocatable :: dsinf(:), dsupper(:), dsfilter2(:)
 real(8), allocatable :: sum_rtuv(:), sum_rtuv_x(:), sum_rtuv_y(:)
 real(8), allocatable :: dsdepth(:,:)
 
-! 遺伝的アルゴリズム
+! 遺伝的アルゴリズム  2507 廃止予定
 integer, allocatable :: genes(:), paddycluster(:)
 integer ga, paddyclass
 
