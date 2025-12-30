@@ -1,11 +1,15 @@
-! River Basin Disaster Resilience and Sustainability by All
-! coded by k.yamamura
-! added by d.baba
-!
+! Element Models
+! Coded by K.Kawaike and TK Labo
+! Latest Update July 7th 2025
 
-! paddy field dam
+! =================
+!  paddy field dam
+! =================
+! -----------------
+!  Initialize
+! -----------------
 subroutine paddyinitiald
-    use globals
+    use unst_globals_mod
     implicit none
     integer i, pa, k, ii
     real(8), allocatable :: hpa(:), gradp(:), speedp(:) 
@@ -101,10 +105,11 @@ subroutine paddyinitiald
 
 end subroutine paddyinitiald
 
-
+! ------------------------------------
 ! paddy field dam outflow calculation
+! ------------------------------------
 subroutine timedelay_paddyflow
-    use globals
+    use unst_globals_mod
     implicit none
     integer j, ii, k, idx
     real(8) temp_qin
@@ -128,7 +133,7 @@ end subroutine timedelay_paddyflow
 
 
 subroutine paddyflow
-    use globals
+    use unst_globals_mod
     implicit none
     integer pa, ii, ilt, k, j
     real(8) qp1, qp2, qp3, qp, total_depth, hhp
@@ -205,10 +210,14 @@ subroutine paddyflow
 
 end subroutine paddyflow
 
-
-! sewerage and fields are 
+! =========================
+!  sewerage and fields are
+! =========================
+! -----------------
+!  Initialize
+! -----------------
 subroutine draininitiald
-    use globals
+    use unst_globals_mod
     implicit none
 
     integer me
@@ -282,10 +291,11 @@ subroutine draininitiald
 
 end subroutine draininitiald
 
-
-! drain outflow calculation
+! ---------------------------
+!  drain outflow calculation
+! ---------------------------
 subroutine drainflow
-    use globals
+    use unst_globals_mod
     implicit none
     integer(8) nn, idx, j, ii
     real(8) temp_qin
