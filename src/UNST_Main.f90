@@ -1,72 +1,62 @@
 !***********************************************************************
 ! UNST_Main.f90
-! Coded by K.Kawaike and TK Labo
-! Released on July 7th 2025 
+! Coded by K.Kawaike, Added by TK Labo
+! Released on July 7th 2025
 !***********************************************************************
 
-program UNST
-    use globals
+!-----------------------------------------------------------------------
+! UNSTメインプログラム/UNST2D main program
+!-----------------------------------------------------------------------
+program UNST2D
+    use unst_globals_mod
+    use unst_read
+    use unst_cal_sub
+    use d1riv_globals_mod
+    use unst_d1riv_read
+    use unst_1d_main
+    use unst_wrfile
     implicit none
-    integer i, me, li, k, iqmax, ihmax
-    real(8) alpg2, alpbet, cslgb, alpha
+    integer i, me, li, k
 
-    write(*,*) 'UNST version0_0_0'
+    write(*,*) 'UNST version1_0_5'
 
     ! data read
     call unst_rdat
+    call open_unst_output_files
+    if(dsmesh==1) call dsmeshdat
+    if(d1riv==1) call d1rivdat(timmax, dt2, mesh, baseo, fd1riv_cntl)
     if(plantFN==1) call plantFNdat
     if(plantDa==1) call plantDadat
     if(paddydam==1) call paddydat
     if(drainarea==1) call draindat
     if(morid==1) call moriddat
-    if(d1riv==1) then
-        alpha = 1.0d0
-        unstbeta = 1.0d0
-        cslmd = 1.0d0
-        alpg2 = alpha/(2.0d0*gg)
-        alpbet = (alpha-unstbeta)/(2.0d0*unstbeta)
-        cslgb = cslmd*gg/unstbeta
-        call d1rivdat
-    endif
-
-    if(d1riv==1) call bndry(iqmax,ihmax)
     
     ! initiald condition
     call unst_initiald
+    if(d1riv==1) call d1rivinitiald(dt2)
     if(paddydam==1) call paddyinitiald
     if(drainarea==1) call draininitiald
 
     unsttime = 0.0d0
     mstep = 0
 
-    ! 田んぼダムの適用
-    if(str_type == 0) then
-        phi(61) = 0.20d0
-        phi(63) = 0.20d0
-    elseif(str_type == 1) then
-        phi(61) = 0.05d0
-        phi(63) = 0.20d0
-    endif
-
-    if(d1riv==1) call elm(alpg2, alpbet, cslgb)
-
     call diskwrite
     call dispwrite
     if(paddydam==1) call paddywrite
     !+++++++++++++++++++++++++++++++++++++++++++++++++++++
-    !                  loop start↓
+    !                  Loop Start
     !+++++++++++++++++++++++++++++++++++++++++++++++++++++
-    ! ----------------------
-    !  equation of motion
-    ! ----------------------
-    if(d1riv==1) goto 100
-  1 call flux
-    if(inls /= 2) call lkyokai
+    do while (unsttime + unstdt <= timmax)
+    ! $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    !  Equation of motion (cal flux)
+    ! $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    call flux   ! cal link flux
+    call lkyokai ! apply boundary condition
 
-    ! hangling tips (sentan no toriatsukai)
+    ! flow flux(velocity) ahead of the flood inundation front set
     !$omp parallel do default(shared),private(me,li,k)
     do me = 1, mesh
-        if(unsth(me) >= th) goto 200
+        if(unsth(me) >= th) cycle
         do k = 1, ko(me)
             li = melink(me, k)
             if((um(li)*node_dy(me,k) - vn(li)*node_dx(me,k)) > 0.0d0) then
@@ -74,40 +64,28 @@ program UNST
                 vn(li) = 0.0d0
             endif
         enddo
-200 enddo
-    !$omp end parallel do
-
-    !河川網の計算
-    if(d1riv==1) then
-        call links
-        call inodes
-        call bnodes(iqmax, ihmax)
-        call elm(alpg2, alpbet, cslgb)
-    endif
-100 continue
-
-    !横流入流量リセット
-    if(d1riv==1) then
-    !$omp parallel do default(shared),private(i)
-    do i = 1, msctn
-        qys(i) = 0.0d0
     enddo
     !$omp end parallel do
+
+    if(d1riv==1) then
+        call calc_2d_to_1d_inflow
+        call calc_1d_to_2d_outflow
+        call d1riv_main(unsttime)
     endif
 
-    ! time step       
+    ! update time(1)
     unsttime = unsttime + unstdt
     mstep = mstep + 1
 
-    ! -----------------------------
-    !  equation of continuity 
-    ! -----------------------------
-    call suisin
+    ! $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    !  Equation of continuity (cal waterdepth)
+    ! $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    call suisin  ! cal mesh water depth
 
-    ! calculate velocity
+    ! cal velocity
     call velocity
 
-    ! calculate max h and v 
+    ! update max record
     !$omp parallel do default(shared),private(me)
     do me = 1, mesh
         hmax(me) = max(hmax(me), unsth(me))
@@ -115,55 +93,66 @@ program UNST
         vvmmax(me) = max(vvmmax(me), abs(vvm(me)))
     enddo
     !$omp end parallel do
-    
-    ! replace data ( new >>> old )
+
+    ! update variable（new >>> old）
     call replace
 
-    ! time step 
+    ! reset subflow
+    if(d1riv==1) then
+        riv_eq = 0.0d0
+        !$omp parallel do default(shared),private(i)
+        do i = 1, ndan
+            h_1dmax(i) = max(h_1dmax(i), h_1d(i))
+            vv_1dmax(i) = max((vv_1dmax(i)), abs(vv_1d(i)))
+        enddo
+        !$omp end parallel do
+    endif
+
+    ! update time(2)
     unsttime = unsttime + unstdt
     mstep = mstep + 1
 
-    ! output
-    if(mod(mstep, lkout) == 0) call diskwrite
-    if(mod(mstep, lpout) == 0) call dispwrite
-    if(paddydam==1 .and. mod(mstep, lkout) == 0) call paddywrite
+    ! output result
+    if(mod(mstep, lkout) == 0) call diskwrite   ! disk
+    if(mod(mstep, lpout) == 0) call dispwrite   ! display
+    if(paddydam==1 .and. mod(mstep, lkout) == 0) call paddywrite  ! paddydam
 
-    ! time judging
-    if(unsttime + unstdt <= timmax) goto 1
+    enddo
     !+++++++++++++++++++++++++++++++++++++++++++++++++++++
-    !                  loop end
+    !                  Loop End
     !+++++++++++++++++++++++++++++++++++++++++++++++++++++
     call wrhmax
     write(*, 1999) unsttime, timmax
 1999 format('      - normal end -  time=', f8.0, '  timmax=', f8.0)
 
-    close(91)
-    close(93)
-    close(94)
-    close(95)
-    close(96)
-    close(97)
 !
     ! deallocate variables
-    deallocate(baseo, dnox, dnoy, smesh, scv, rthl, ux, uy, xmesh, ymesh, rtuv_x, rtuv_y)
-    deallocate(limesh, linode, inf, ko, menode, melink, inl)
-    if(inls == 1) deallocate(qin,lkyokai_dx,lkyokai_dy)
-    if(inls == 0) deallocate(qin1,lkyokai_dx,lkyokai_dy)
-    deallocate(unsth, ho, hl, hmax, uummax, vvmmax)
-    deallocate(um, umo, umm, uu, vn, vno, vnm, vv)
-    deallocate(mn, rnof, lambda, rbeta, umbeta, vnbeta)
-    deallocate(uum, vvm, lhan, lhano, qr_sum,rnx,dl)
-    deallocate(unstc, co, str, stro, strmx)
-    if(plantFN==1) deallocate(plantF_array, plantN_array)
-    if(plantDa==1) deallocate(plant_D_array,plant_a_array,dk_val)
-    if(paddydam==1) deallocate(paddyid, pqout_idx, pdrain, min_pmeshid, device)
-    if(paddydam==1) deallocate(orifice_num, min_dist, psmesh, dr_dist, dhp, phid)
-    if(paddydam==1) deallocate(paddy_q, pqh)
-    if(drainarea==1) deallocate(inf_dr, drp, drr, drr_dist, dhj)
-    if(d1riv==1) deallocate(iptn, hb, rn, dx2, ihnum, ha, hr, mnd, nd)
-    if(d1riv==1) deallocate(kkousi, kkasen, qhyd, hhyd)
-    if(d1riv==1) deallocate(hn, qn, hs, us, as, bs, htes, fs, cap, cbm, qys, sap, sbm)
-    if(dsmesh==1) deallocate(dsdt, dsinf, dsupper, dsfilter2)
-    if(ga==1) deallocate(genes)
+call close_unst_output_files
+
+deallocate(baseo, dnox, dnoy, smesh, scv, rthl, ux, uy, xmesh, ymesh, rtuv_x, rtuv_y)
+deallocate(limesh, linode, inf, ko, menode, melink, inl, qin, lkyokai_dx, lkyokai_dy)
+deallocate(unsth, ho, hl, hmax, uummax, vvmmax)
+deallocate(um, umo, umm, uu, vn, vno, vnm, vv)
+deallocate(mn, rnof, lambda, rbeta)
+deallocate(uum, vvm, lhan, lhano, qr_sum, rnx, dl)
+if(plantFN==1) deallocate(plantF_array, plantN_array)
+if(plantDa==1) deallocate(dk_val)
+if(paddydam==1) deallocate(paddyid, pqout_idx, pdrain, min_pmeshid, device)
+if(paddydam==1) deallocate(orifice_num, min_dist, psmesh, dr_dist, dhp, phid)
+if(paddydam==1) deallocate(paddy_q, pqh, drain2phidx)
+if(drainarea==1) deallocate(inf_dr, drp, drr, drr_dist, dhj)
+if(dsmesh==1) then
+    if(any(ds_inf==2)) deallocate(ds_wl)
+    if(dsmesh==1) deallocate(ds_dt, ds_inf, ds2me, ds_upme)
+endif
+if(d1riv==1) deallocate(riv_ndan, h_1d, ho_1d, vv_1d, q_1d, qo_1d, a_1d, r_1d, b_1d, rn_1d)
+if(d1riv==1) deallocate(h_1dmax, ntype_1d, kp_1d, dx_1d, depth_1d, rbed_1d, rzmax_1d)
+if(d1riv==1) deallocate(dan_record, n_tbl, h_table, a_table, r_table, b_table, rn_table)
+if(d1riv==1) deallocate(b_idx_1d, b_dt_1d, b_data_1d, up_h_1d, up_q_1d, b_upme_1d, b_dome_1d)
+if(d1riv==1) deallocate(subflow_input, subq_all, tributaryq_1d, pumpq_1d, sluiceq_1d)
+if(d1riv==1) deallocate(breakq_1d, breakq_l_1d, breakq_r_1d)
+if(d1riv==1) deallocate(weirq_1d, weirq_l_1d, weirq_r_1d, weir_dx_1d)
+if(d1riv==1) deallocate(w_alpha_1d, w_angle_1d, bktype_1d)
+if(d1riv==1) deallocate(ncnct_1d2d, cnct_1d2d_idx, crown_1d, inland_1d)
     
-end program UNST
+end program UNST2D

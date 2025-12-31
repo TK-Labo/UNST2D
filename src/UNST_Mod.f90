@@ -1,43 +1,113 @@
-module globals
+! Define Global Variables
+! Coded by K.Kawaike and TK Labo
+! Released on July 7th 2025
 
-!------------------UNST MODEL----------------
-real(8) pi
-real(8) gg, unstdt, dt2, unsttime, dtq, th, fita, dtrain, precond_time
-real(8), allocatable :: unsth(:), ho(:), hl(:), hmax(:), uummax(:), vvmmax(:)
-real(8), allocatable :: um(:), umo(:), umm(:), uu(:), vn(:), vno(:), vnm(:), vv(:)
-real(8), allocatable :: baseo(:)
-real(8), allocatable :: dnox(:), dnoy(:)
-real(8), allocatable :: scv(:), rthl(:,:), ux(:), uy(:), smesh(:)
-real(8), allocatable :: mn(:), rnof(:), lambda(:), rbeta(:), umbeta(:), vnbeta(:)
-real(8), allocatable :: xmesh(:), ymesh(:), rtuv(:, :)
-real(8), allocatable :: rtuv_x(:,:), rtuv_y(:,:)
-real(8), allocatable :: uum(:), vvm(:)
-integer sep_rtuv
-real(8) ocpy, unstbeta
-real(8), allocatable :: qin(:,:), qin1(:)   !RRI_UNST-2Dはqin1(:) >> qinu(:,:), qinv(:,:)
-integer, allocatable :: limesh(:,:), linode(:,:)
-integer, allocatable :: inf(:)    
-integer, allocatable :: lhan(:), lhano(:)
-integer, allocatable :: ko(:), menode(:,:), melink(:,:)
-integer mesh, link, node, mstep
-integer iqnum, iqin
-integer, allocatable :: inl(:)
-real(8), allocatable :: rnx(:), dl(:)
-integer plantFN, plantDa, paddydam, drainarea, dsmesh, precond_hot
+module unst_globals_mod
 
-real(8) timmax
-real(8), allocatable :: node_dx(:,:), node_dy(:,:), lkyokai_dx(:), lkyokai_dy(:), lkyokai_vect(:)
+! ================
+!  constant param
+! ================
+real(8), parameter :: pi = 3.14d0   ! pi
+real(8), parameter :: gg = 9.8d0    ! gravitational acceleration
+real(8), parameter :: th = 1.0d-3   ! Limit depth of movement
+real(8), parameter :: fita = 0.5d0  !
+
+! =============
+!  time & step 
+! =============
+integer mstep
 integer lkout, lpout
-integer inls, nx_rain, ny_rain, t_rain !UNST-2D only
+real(8) unstdt, unsttime, timmax
+real(8) dt2, dtq, dtrain
+
+! ======
+!  grid
+! ======
+! -- num of data --
+integer mesh, link, node
+! -- mesh param & condition --
+integer, allocatable :: ko(:), melink(:,:), menode(:,:)  ! components(link & node)
+real(8), allocatable :: node_dx(:,:), node_dy(:,:)       ! components(link)
+real(8), allocatable :: smesh(:)  ! area
+real(8), allocatable :: xmesh(:), ymesh(:)  ! centroid coords
+real(8), allocatable :: rtuv_x(:,:), rtuv_y(:,:)  ! interpolarate conf
+integer, allocatable :: inf(:)  ! landuse type id
+real(8), allocatable :: baseo(:), mn(:), lambda(:)
+real(8), allocatable :: rnof(:)  ! rainfall correction factor(No select value v.1.0.5)
+    ! - - -
+real(8), allocatable :: unsth(:), ho(:), hmax(:)   ! depth
+real(8), allocatable :: umm(:), uum(:), uummax(:)  ! flux & speed
+real(8), allocatable :: vnm(:), vvm(:), vvmmax(:)  ! flux & speed
+real(8), allocatable :: qr_sum(:)
+! -- link param & condition --
+integer, allocatable :: limesh(:,:), linode(:,:)  ! components(mesh & link)
+real(8), allocatable :: scv(:)  !
+real(8), allocatable :: rthl(:,:), ux(:), uy(:)  ! interpolarate conf
+real(8), allocatable :: dl(:), rnx(:), rbeta(:), umbeta(:), vnbeta(:)
+real(8), allocatable :: blink(:)  ! length  v.1.0.5
+    ! - - -
+real(8), allocatable :: hl(:)  ! depth
+real(8), allocatable :: um(:), umo(:), uu(:)  ! flux & speed
+real(8), allocatable :: vn(:), vno(:), vv(:)  ! flux & speed
+integer, allocatable :: lhan(:), lhano(:)   ! interpolarate switch
+! -- node param --
+real(8), allocatable :: dnox(:), dnoy(:)
+
+! =====
+!  qin
+! =====
+! -- switch --
+integer inls
+! -- num of data --
+integer iqnum, iqin
+! -- qin param -- 
+integer, allocatable :: inl(:)  ! link id or mesh id
+integer, allocatable :: lkyokai_dir(:)
+real(8), allocatable :: lkyokai_dx(:), lkyokai_dy(:)  ! link length
+real(8), allocatable :: qin(:,:)
+
+! ======
+!  rain
+! ======
+real(8), allocatable :: rain(:,:,:)  ! rain data
+integer, allocatable :: urain_i(:), urain_j(:)  ! match mesh_id-rain_ij
+
+! =============================
+!  unst用鉛直浸透モデル(infilt)
+! =============================
+real(8), allocatable, save :: unst_soildepth(:)
+real(8), allocatable, save :: unst_gammaa(:)
+real(8), allocatable, save :: unst_ksv(:)
+real(8), allocatable, save :: unst_faif(:)
+real(8), allocatable, save :: unst_infilt_limit(:)
+real(8), allocatable, save :: unst_gampt_ff(:), unst_gampt_f(:)
+
+! ======
+!  else
+! ======
+real(8) unst_error_v, unst_dis_v ! numerical error & discharge q
+
+! ======================================
+!  flow resistance caused by vegetation
+! ======================================
+! -- switch --
+integer plantFN, plantDa
+! -- param & condition --
+integer, allocatable :: plantF_array(:), plantN_array(:)       !植生帯（ヨシ帯）
+real(8), allocatable :: plant_D_array(:), plant_a_array(:)     !植生帯（樹林帯）
+real(8), allocatable :: plant_hv_array(:), vr_cd(:)            !植生帯（樹林帯）
+real(8), allocatable :: dk_val(:), plant_lambda(:)             !植生帯（樹林帯）
+real(8), allocatable :: vr_hv(:)                               !植生帯（樹林帯）
+
 real(8), allocatable :: rri_x(:), rri_y(:)
 
-! 樹林帯モデル
-integer, allocatable :: plantF_array(:), plantN_array(:)      !樹林帯（ヨシなど）
-real(8), allocatable :: plant_D_array(:), plant_a_array(:)                         !樹林帯(防備林)
-real(8), allocatable :: dk_val(:), plant_lambda(:)             !樹林帯(防備林)
-
-! 田んぼダムモデル
-integer, allocatable :: paddyid(:), device(:), phid(:) 
+! ==========
+!  Paddydam
+! ==========
+! -- switch --
+integer paddydam
+! -- param & condition --
+integer, allocatable :: paddyid(:), device(:), phid(:)
 integer, allocatable :: pqout_idx(:), pdrain(:), min_pmeshid(:)
 integer wtyp, paddy, ca, nhp
 real(8), allocatable :: pqh(:), min_dist(:), totalqp(:)
@@ -48,73 +118,67 @@ integer, allocatable :: ttp(:), orifice_num(:), paddycount_num(:)    !paddydat
 integer, allocatable :: paddyid2mesh(:,:), drain2phidx(:)
 integer max_paddycount_num
 
-! 下水道・圃場モデル
-integer, allocatable :: inf_dr(:), tripTime(:)                   !下水道圃場             
+! ==========
+!  Drainage
+! ==========
+! -- switch --
+integer drainarea
+! -- param & condition --
+integer, allocatable :: inf_dr(:), tripTime(:)                   !下水道圃場
 integer dr_no
 integer, allocatable :: drp(:), drc(:)                       !下水道・圃場モデル
 real(8), allocatable :: drr(:), drr_dist(:)                     !下水道・圃場モデル
 real(8), allocatable :: vol_dr(:), vol(:)                       !下水道・圃場モデル
 
-
-real(8), allocatable :: rain(:,:,:)    
-integer, allocatable :: urain_i(:), urain_j(:)
-integer tt_max_rain !UNST-2D only
-
-!盛り土
+! =================
+!  Line Embankment
+! =================
 integer mmorid, morid
-integer, allocatable :: nmorili(:), infl(:), lnode1(:), lnode2(:), neib1(:), neib2(:)
+integer, allocatable :: infl(:)
 real(8), allocatable :: zbbk(:)
 
-!水収支
-real(8), allocatable :: qr_sum(:)
-
-! 1driv k.kawaike - UNST-2D original
-real(8) cslmd
-integer d1riv, msctn
-integer knode, knode1, knode2, ksetu
-real(8), allocatable :: hn(:), qn(:), hs(:), qs(:), us(:), as(:), bs(:)
-real(8), allocatable :: htes(:), fs(:), cap(:), cbm(:), qys(:), sap(:), sbm(:)
-integer, allocatable :: iptn(:), ihnum(:)
-real(8), allocatable :: hb(:), rn(:), dx2(:)
-real(8), allocatable :: ha(:,:), hr(:,:)
-integer, allocatable :: mnd(:), nd(:,:)
-real(8), allocatable :: qhyd(:,:), hhyd(:,:)
-integer, allocatable :: kkousi(:), kkasen(:)
-integer, parameter :: str_type = 0  ! 2507 廃止予定
-integer count1, count2, count3, count4
-real(8), allocatable :: unstc(:), co(:), cr(:), str(:), stro(:), strmx(:)
-real(8) qout, dvr, vrain, sv0, v_minus_all, v_minus(100), phi(100)
-real(8) svc, v_cminus, v_cplus, v_cextre !tracer
-! weir(1d-2d) d.baba - UNST-2D original
-real(8), allocatable :: f_qs(:)
-real(8), allocatable :: dq_l(:), dq_r(:)
-real(8), allocatable :: lcrown(:), rcrown(:)
-real(8), allocatable :: wir_alpha(:), wir_angle(:)
-! tabele d.baba - UNST-2D original
-integer ndan_num
-real(8) max_dz
-integer, allocatable :: ndan(:)
-real(8), allocatable :: dcoord_x(:,:), dcoord_z(:,:)
-real(8), allocatable :: min_z(:), max_z(:)
-real(8), allocatable :: ah(:,:), hss(:,:)
-
-! 下流端からの排水
-integer dsmenum, idsfilter2, idsdepth
-real(8), allocatable :: dsdt(:)
-integer, allocatable :: dsinf(:), dsupper(:), dsfilter2(:)
+! ===========
+!  Discharge
+! ===========
+! -- switch --
+integer dsmesh
+! -- num of data --
+integer dsmenum, ids2mesh, idsdepth
+! -- param & condition --
+real(8), allocatable :: ds_dt(:)
+integer, allocatable :: ds_inf(:), ds_upme(:), ds2me(:)
 real(8), allocatable :: sum_rtuv(:), sum_rtuv_x(:), sum_rtuv_y(:)
-real(8), allocatable :: dsdepth(:,:)
+real(8), allocatable :: ds_wl(:,:)
 
-! 遺伝的アルゴリズム  2507 廃止予定
-integer, allocatable :: genes(:), paddycluster(:)
-integer ga, paddyclass
+! ==================
+!  file path & unit
+! ==================
+! -- file path --
+character(len=50) :: &
+    fdhp, fpaddyh, fpaddyq, &
+    fh, fhmx, fuum, fvvm, &
+    fuumx, fvvmx, fstorage, fq, &
+    fvminus, fkyokaiq
+! -- file path (use from RRI) --
+character(len=50) :: &
+    fdsmesh, fplantF, fplantN, fplantD, fplanta, &
+    fpaddy, fpqout, fpaddy_param, &
+    finf_dr, fdrain, fmorid, fd1riv_cntl, &
+    fplanthv, fplantcd
+! -- unit --
+integer :: &
+    fdhp_unit, fpaddyh_unit, fpaddyq_unit, &
+    fh_unit, fhmx_unit, fuum_unit, fvvm_unit, &
+    fuumx_unit, fvvmx_unit, fstorage_unit, fq_unit
 
-! unst用鉛直浸透モデル(infilt)
-real(8), allocatable, save :: unst_soildepth(:)
-real(8), allocatable, save :: unst_gammaa(:)
-real(8), allocatable, save :: unst_ksv(:)
-real(8), allocatable, save :: unst_faif(:)
-real(8), allocatable, save :: unst_infilt_limit(:)
-real(8), allocatable, save :: unst_gampt_ff(:), unst_gampt_f(:)
+! ======================
+!  1d-riv (development)
+! ======================
+! -- switch --
+integer d1riv
+! -- num of data --
 
-end module globals
+! -- param & condition --
+real(8), allocatable :: riv_eq(:)
+
+end module unst_globals_mod
