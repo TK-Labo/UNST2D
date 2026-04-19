@@ -34,6 +34,8 @@ contains
 ! UNST2D 運動方程式/UNST2D equation of motion
 ! 変数/Variable:
 ! > 一時変数/temporary variable
+!   lime1: linkに隣接するmesh(1)のmesh番号
+!   lime2: linkに隣接するmesh(2)のmesh番号
 !   hhe: linkに隣接するmesh(2)の水位/water level of the mesh(2) adjacent to the link
 !   hhw: linkに隣接するmesh(1)の水位/water level of the mesh(1) adjacent to the link
 !   hhep: linkに隣接するmesh(1)の有効水深(水深-移動限界水深th)/
@@ -61,27 +63,33 @@ subroutine flux
     real(8) hhe, hhw, hhep, hhwp, hhan, sgn, hh1 !Discontinuous(Drop formula, Overflow formula)
     real(8) u11, v11, u13, v13, sqx, ram !Continuous
     integer li, k, me1, me2
+    integer lime1, lime2, li2  ! v1.0.5.1
     real(8) b, h1, h2, uvmn, vol1, vol2
     real(8) vr_hl, vr_u, vr_v
+    real(8) dep1, dep2  ! v1.0.5.1
 
     !$omp parallel do default(shared) &
     !$omp private(hhe, hhw, hhep, hhwp, hhan, sgn, hh1, u11, v11, u13, v13, sqx, ram, li, k, me1, me2) &
-    !$omp private(b, h1, h2, uvmn, vol1, vol2, vr_hl, vr_u, vr_v)
+    !$omp private(b, h1, h2, uvmn, vol1, vol2, vr_hl, vr_u, vr_v, lime1, lime2, dep1, dep2, li2)
   do li = 1, link
-    if(limesh(li, 2) == 0) cycle
-    if((inf(limesh(li, 2)) == 0) .or. (inf(limesh(li, 1)) == 0) .or. &
+    lime1 = limesh(li, 1)  ! v1.0.5.1
+    lime2 = limesh(li, 2)  ! v1.0.5.1
+    if(lime2 == 0) cycle
+    dep1 = unsth(lime1)    ! v1.0.5.1
+    dep2 = unsth(lime2)    ! v1.0.5.1
+    if((inf(lime2) == 0) .or. (inf(lime1) == 0) .or. &
        (rbeta(li) == 0.0d0) .or. &
-       (unsth(limesh(li, 1)) <= th .and. unsth(limesh(li, 2)) <= th)) then
+       (dep1 <= th .and. dep2 <= th)) then
         um(li) = 0.0d0
         vn(li) = 0.0d0
         lhan(li) = 1
         cycle
     endif
     ! water level, effective water depth set
-    hhe = unsth(limesh(li, 2)) + baseo(limesh(li, 2))
-    hhw = unsth(limesh(li, 1)) + baseo(limesh(li, 1))
-    hhep = unsth(limesh(li, 2)) - th
-    hhwp = unsth(limesh(li, 1)) - th
+    hhe = dep2 + baseo(lime2)
+    hhw = dep1 + baseo(lime1)
+    hhep = dep2 - th
+    hhwp = dep1 - th
 
     ! line embankment added by CTI r.nishizawa
     if (morid == 1) then
@@ -94,17 +102,17 @@ subroutine flux
         sgn = sign(1.0d0, hhan)
 
         if (h1 > th) then
-            if((h2/h1) <= 2.0d0/3.0d0 .and. h1 > th) then
+            if((h2*3.0d0) <= (h1*2.0d0)) then  ! 徐算の削除 v1.0.5.1
                 um(li) = -sgn * 0.35d0 * h1 * sqrt(2.0d0*gg*h1)*ux(li)
                 vn(li) = -sgn * 0.35d0 * h1 * sqrt(2.0d0*gg*h1)*uy(li)
-            elseif((h2/h1) > 2.0d0/3.0d0 .and. h1 > th) then
+            elseif((h2*3.0d0) > (h1*2.0d0)) then  ! 徐算の削除 v1.0.5.1
                 um(li) = -sgn * 0.91d0 * h2 * sqrt(2.0d0*gg*(h1-h2))*ux(li)
                 vn(li) = -sgn * 0.91d0 * h2 * sqrt(2.0d0*gg*(h1-h2))*uy(li)
             endif
 
             uvmn = sqrt(um(li)**2 + vn(li)**2) * b * dt2
-            vol1 = unsth(limesh(li,1)) * smesh(limesh(li,1)) * (1.0d0 - lambda(limesh(li,1)))
-            vol2 = unsth(limesh(li,2)) * smesh(limesh(li,2)) * (1.0d0 - lambda(limesh(li,2)))
+            vol1 = dep1 * smesh(lime1) * (1.0d0 - lambda(lime1))
+            vol2 = dep2 * smesh(lime2) * (1.0d0 - lambda(lime2))
 
             if (hhw > hhe .and. uvmn > vol1) then
                 um(li) = um(li) * vol1/uvmn
@@ -124,27 +132,27 @@ subroutine flux
 
     ! when the water surface is not continuous
     ! 段落ちの式
-    if(hhe < baseo(limesh(li, 1))) then
-        if ((inf(limesh(li,1))==71 .and. inf(limesh(li,2))<71) .or. &
-            (inf(limesh(li,2))==71 .and. inf(limesh(li,1))<71)) then
+    if(hhe < baseo(lime1)) then
+        if ((inf(lime1)==71 .and. inf(lime2)/=71) .or. &
+            (inf(lime2)==71 .and. inf(lime1)/=71)) then
             !田んぼダム適用 by k.yamamura(inf=71)
-            if(unsth(limesh(li,1)) > lh + th) then
-                um(li) = 0.544d0*(unsth(limesh(li, 1)) - lh)*sqrt(gg*(unsth(limesh(li, 1)) - lh))*ux(li)
-                vn(li) = 0.544d0*(unsth(limesh(li, 1)) - lh)*sqrt(gg*(unsth(limesh(li, 1)) - lh))*uy(li)
+            if(dep1 > lh + th) then
+                um(li) = 0.544d0*(dep1 - lh)*sqrt(gg*(dep1 - lh))*ux(li)
+                vn(li) = 0.544d0*(dep1 - lh)*sqrt(gg*(dep1 - lh))*uy(li)
             else
                 um(li) = 0.0d0
                 vn(li) = 0.0d0
             endif
         else
             ! 田んぼダム適用場所以外
-            if(unsth(limesh(li, 1)) > th) then
-                if(baseo(limesh(li,2))==-9999.0d0 .and. baseo(limesh(li,1))/=-9999.0d0) then
+            if(dep1 > th) then
+                if(baseo(lime2)==-9999.0d0 .and. baseo(lime1)/=-9999.0d0) then
                     !自由流出
-                    um(li) = unsth(limesh(li,1))*sqrt(2.0d0*gg*unsth(limesh(li,1)))*ux(li)
-                    vn(li) = unsth(limesh(li,1))*sqrt(2.0d0*gg*unsth(limesh(li,1)))*uy(li)
+                    um(li) = dep1*sqrt(2.0d0*gg*dep1)*ux(li)
+                    vn(li) = dep1*sqrt(2.0d0*gg*dep1)*uy(li)
                 else
-                    um(li) = 0.544d0*unsth(limesh(li, 1))*sqrt(gg*unsth(limesh(li, 1)))*ux(li)
-                    vn(li) = 0.544d0*unsth(limesh(li, 1))*sqrt(gg*unsth(limesh(li, 1)))*uy(li)
+                    um(li) = 0.544d0*dep1*sqrt(gg*dep1)*ux(li)
+                    vn(li) = 0.544d0*dep1*sqrt(gg*dep1)*uy(li)
                 endif
             else
                 um(li) = 0.0d0
@@ -153,27 +161,27 @@ subroutine flux
         endif
         lhan(li) = 1
         cycle
-    elseif (hhw < baseo(limesh(li, 2))) then
-        if ((inf(limesh(li,1))==71 .and. inf(limesh(li,2))<71) .or. &
-            (inf(limesh(li,2))==71 .and. inf(limesh(li,1))<71)) then
+    elseif (hhw < baseo(lime2)) then
+        if ((inf(lime1)==71 .and. inf(lime2)/=71) .or. &
+            (inf(lime2)==71 .and. inf(lime1)/=71)) then
             ! 田んぼダム適用 by k.yamamura(inf=71)
-            if(unsth(limesh(li,2)) > lh + th) then
-                um(li) = -0.544d0*(unsth(limesh(li, 2)) - lh)*sqrt(gg*(unsth(limesh(li, 2)) - lh))*ux(li)
-                vn(li) = -0.544d0*(unsth(limesh(li, 2)) - lh)*sqrt(gg*(unsth(limesh(li, 2)) - lh))*uy(li)
+            if(dep2 > lh + th) then
+                um(li) = -0.544d0*(dep2 - lh)*sqrt(gg*(dep2 - lh))*ux(li)
+                vn(li) = -0.544d0*(dep2 - lh)*sqrt(gg*(dep2 - lh))*uy(li)
             else
                 um(li) = 0.0d0
                 vn(li) = 0.0d0
             endif
         else
             !　田んぼダム適用以外
-            if(unsth(limesh(li,2)) > th) then
-                if(baseo(limesh(li,1))==-9999.0d0 .and. baseo(limesh(li,2))/=-9999.0d0) then
+            if(dep2 > th) then
+                if(baseo(lime1)==-9999.0d0 .and. baseo(lime2)/=-9999.0d0) then
                     !自由流出
-                    um(li) = -unsth(limesh(li,2))*sqrt(2.0d0*gg*unsth(limesh(li,2)))*ux(li)
-                    vn(li) = -unsth(limesh(li,2))*sqrt(2.0d0*gg*unsth(limesh(li,2)))*uy(li)
+                    um(li) = -dep2*sqrt(2.0d0*gg*dep2)*ux(li)
+                    vn(li) = -dep2*sqrt(2.0d0*gg*dep2)*uy(li)
                 else
-                    um(li) = -0.544d0*unsth(limesh(li, 2))*sqrt(gg*unsth(limesh(li, 2)))*ux(li)
-                    vn(li) = -0.544d0*unsth(limesh(li, 2))*sqrt(gg*unsth(limesh(li, 2)))*uy(li)
+                    um(li) = -0.544d0*dep2*sqrt(gg*dep2)*ux(li)
+                    vn(li) = -0.544d0*dep2*sqrt(gg*dep2)*uy(li)
                 endif
             else
                 um(li) = 0.0d0
@@ -185,13 +193,12 @@ subroutine flux
 
     ! 完全越流の式
     elseif(hhep*hhwp < 0.0d0) then
-        if(unsth(limesh(li, 2)) > 0.0d0 .or. unsth(limesh(li, 1)) > 0.0d0) then
+        if(dep2 > 0.0d0 .or. dep1 > 0.0d0) then
             hhan = hhep - hhwp
             sgn = sign(1.0d0, hhan)
-            hh1 =   max(unsth(limesh(li, 2))+baseo(limesh(li, 2)), unsth(limesh(li, 1)) + baseo(limesh(li, 1))) &
-                    - max(baseo(limesh(li, 2)), baseo(limesh(li, 1)))
-            if ((inf(limesh(li,1))==71 .and. inf(limesh(li,2))<71) .or. &
-                (inf(limesh(li,2))==71 .and. inf(limesh(li,1))<71)) then
+            hh1 = max(hhe, hhw) - max(baseo(lime2), baseo(lime1))
+            if ((inf(lime1)==71 .and. inf(lime2)/=71) .or. &
+                (inf(lime2)==71 .and. inf(lime1)/=71)) then
                 ! 田んぼダム適用
                 if(hh1 > lh + th) then
                     um(li) = - sgn*0.35d0*(hh1-lh)*sqrt(2.0d0*gg*(hh1-lh))*ux(li)
@@ -217,70 +224,72 @@ subroutine flux
     ! convective terms
     u11 = 0.0d0
     v11 = 0.0d0
-    do k = 1, ko(limesh(li, 1))
+    do k = 1, ko(lime1)
         me1 = 0
         me2 = 0
-        if((lhano(melink(limesh(li, 1), k)) == 1) .or. (melink(limesh(li, 1), k) == li) .or. &
-           (uu(melink(limesh(li, 1), k))==0.0d0 .and. vv(melink(limesh(li, 1), k))==0.0d0)     ) cycle
-        if(uu(melink(limesh(li, 1), k))*node_dy(limesh(li,1),k) > 0.0d0) then
-            me1 = limesh(li, 1)
+        li2 = melink(k, lime1)
+        if((lhano(li2) == 1) .or. (li2 == li) .or. &
+           (uu(li2)==0.0d0 .and. vv(li2)==0.0d0)     ) cycle
+        if(uu(li2)*node_dy(k, lime1) > 0.0d0) then
+            me1 = lime1
         else
-            if(limesh(li, 1) == limesh(melink(limesh(li, 1), k), 1)) me1 = limesh(melink(limesh(li, 1), k), 2)
-            if(limesh(li, 1) == limesh(melink(limesh(li, 1), k), 2)) me1 = limesh(melink(limesh(li, 1), k), 1)
+            if(lime1 == limesh(li2, 1)) me1 = limesh(li2, 2)
+            if(lime1 == limesh(li2, 2)) me1 = limesh(li2, 1)
             ! water level
             if(me1 == 0 .and. dsmesh == 1) then
-                if (ds_inf(limesh(li,1))== 2 .or. ds_inf(limesh(li,1))== 3) me1 = limesh(li, 1)
+                if (ds_inf(lime1)== 2 .or. ds_inf(lime1)== 3) me1 = lime1
             endif
         endif
 
-        if(vv(melink(limesh(li, 1), k))*node_dx(limesh(li,1),k) <0.0d0) then
-            me2 = limesh(li, 1)
+        if(vv(li2)*node_dx(k, lime1) <0.0d0) then
+            me2 = lime1
         else
-            if(limesh(li, 1) == limesh(melink(limesh(li, 1), k), 1)) me2 = limesh(melink(limesh(li, 1), k), 2)
-            if(limesh(li, 1) == limesh(melink(limesh(li, 1), k), 2)) me2 = limesh(melink(limesh(li, 1), k), 1)
+            if(lime1 == limesh(li2, 1)) me2 = limesh(li2, 2)
+            if(lime1 == limesh(li2, 2)) me2 = limesh(li2, 1)
             ! water level
             if(me2 == 0 .and. dsmesh == 1) then
-                if (ds_inf(limesh(li,1))== 2 .or. ds_inf(limesh(li,1))== 3) me2 = limesh(li, 1)
+                if (ds_inf(lime1)== 2 .or. ds_inf(lime1)== 3) me2 = lime1
             endif
         endif
         if (me1==0 .and. me2==0) cycle
-        u11 = u11 + uu(melink(limesh(li, 1), k))*umm(me1)*node_dy(limesh(li,1),k) &
-            - vv(melink(limesh(li, 1), k))*umm(me2)*node_dx(limesh(li,1),k)
-        v11 = v11 + uu(melink(limesh(li, 1), k))*vnm(me1)*node_dy(limesh(li,1),k) &
-            - vv(melink(limesh(li, 1), k))*vnm(me2)*node_dx(limesh(li,1),k)
+        u11 = u11 + uu(li2)*umm(me1)*node_dy(k, lime1) &
+            - vv(li2)*umm(me2)*node_dx(k, lime1)
+        v11 = v11 + uu(li2)*vnm(me1)*node_dy(k, lime1) &
+            - vv(li2)*vnm(me2)*node_dx(k, lime1)
     enddo
 
-    do k = 1, ko(limesh(li, 2))
+    do k = 1, ko(lime2)
         me1 = 0
         me2 = 0
-        if((lhano(melink(limesh(li, 2), k)) == 1) .or. (melink(limesh(li, 2), k) == li) .or. &
-           (uu(melink(limesh(li, 2), k))==0.0d0 .and. vv(melink(limesh(li, 2), k))==0.0d0)     ) cycle
-        if(uu(melink(limesh(li, 2), k))*node_dy(limesh(li,2),k) > 0.0d0) then
-            me1 = limesh(li, 2)
+        li2 = melink(k, lime2)
+        if((lhano(li2) == 1) .or. (li2 == li) .or. &
+           (uu(li2)==0.0d0 .and. vv(li2)==0.0d0)     ) cycle
+        if(uu(li2)*node_dy(k, lime2) > 0.0d0) then
+            me1 = lime2
         else
-            if(limesh(li, 2) == limesh(melink(limesh(li, 2), k), 1)) me1 = limesh(melink(limesh(li, 2), k), 2)
-            if(limesh(li, 2) == limesh(melink(limesh(li, 2), k), 2)) me1 = limesh(melink(limesh(li, 2), k), 1)
+            if(lime2 == limesh(li2, 1)) me1 = limesh(li2, 2)
+            if(lime2 == limesh(li2, 2)) me1 = limesh(li2, 1)
             ! water level
             if(me1 == 0 .and. dsmesh == 1) then
-                if (ds_inf(limesh(li,2)) == 2 .or. ds_inf(limesh(li,2)) == 3) me1 = limesh(li, 2)
+                if (ds_inf(lime2) == 2 .or. ds_inf(lime2) == 3) me1 = lime2
             endif
         endif
 
-        if(vv(melink(limesh(li, 2), k))*node_dx(limesh(li,2),k) < 0.0d0) then
-            me2 = limesh(li, 2)
+        if(vv(li2)*node_dx(k, lime2) < 0.0d0) then
+            me2 = lime2
         else
-            if(limesh(li, 2) == limesh(melink(limesh(li, 2), k), 1)) me2 = limesh(melink(limesh(li, 2), k), 2)
-            if(limesh(li, 2) == limesh(melink(limesh(li, 2), k), 2)) me2 = limesh(melink(limesh(li, 2), k), 1)
+            if(lime2 == limesh(li2, 1)) me2 = limesh(li2, 2)
+            if(lime2 == limesh(li2, 2)) me2 = limesh(li2, 1)
             ! water level
             if(me2 == 0 .and. dsmesh == 1) then
-                if (ds_inf(limesh(li,2)) == 2 .or. ds_inf(limesh(li,2)) == 3) me2 = limesh(li, 2)
+                if (ds_inf(lime2) == 2 .or. ds_inf(lime2) == 3) me2 = lime2
             endif
         endif
         if (me1==0 .and. me2==0) cycle
-        u11 = u11 + uu(melink(limesh(li, 2), k))*umm(me1)*node_dy(limesh(li,2),k) &
-            - vv(melink(limesh(li, 2), k))*umm(me2)*node_dx(limesh(li,2),k)
-        v11 = v11 + uu(melink(limesh(li, 2), k))*vnm(me1)*node_dy(limesh(li,2),k) &
-            - vv(melink(limesh(li, 2), k))*vnm(me2)*node_dx(limesh(li,2),k)
+        u11 = u11 + uu(li2)*umm(me1)*node_dy(k, lime2) &
+            - vv(li2)*umm(me2)*node_dx(k, lime2)
+        v11 = v11 + uu(li2)*vnm(me1)*node_dy(k, lime2) &
+            - vv(li2)*vnm(me2)*node_dx(k, lime2)
     enddo
 
     u11 = u11*dt2/scv(li)
@@ -288,10 +297,8 @@ subroutine flux
 
     ! gravitational term
     if(dl(li) /= 0.0d0) then
-        u13 = gg*hl(li)*dt2/dl(li)*ux(li)*(unsth(limesh(li, 2)) + baseo(limesh(li, 2)) &
-            - unsth(limesh(li, 1)) - baseo(limesh(li, 1)))
-        v13 = gg*hl(li)*dt2/dl(li)*uy(li)*(unsth(limesh(li, 2)) + baseo(limesh(li, 2)) &
-            - unsth(limesh(li, 1)) - baseo(limesh(li, 1)))
+        u13 = gg*hl(li)*dt2/dl(li)*ux(li)*(hhe - hhw)
+        v13 = gg*hl(li)*dt2/dl(li)*uy(li)*(hhe - hhw)
     else
         u13 = 0.0d0
         v13 = 0.0d0
@@ -315,10 +322,10 @@ subroutine flux
         vr_v = 0.0d0
     endif
 
-    ! um, vn calculation
-    um(li) = ((1.0d0 - dt2*ram*(1.0d0 - fita))*umo(li) - u11 - u13 + vr_u)/ &
+    ! um, vn calculation v.1.0.5.1 fixed
+    um(li) = ((1.0d0 - dt2*ram*(1.0d0 - fita))*umo(li) - u11 - u13 - vr_u)/ &
             (1.0d0 + dt2*ram*fita)
-    vn(li) = ((1.0d0 - dt2*ram*(1.0d0 - fita))*vno(li) - v11 - v13 + vr_v)/ &
+    vn(li) = ((1.0d0 - dt2*ram*(1.0d0 - fita))*vno(li) - v11 - v13 - vr_v)/ &
             (1.0d0 + dt2*ram*fita)
     lhan(li) = 0
     enddo
@@ -343,7 +350,7 @@ end subroutine flux
 !-------------------------------------------------------------------------------------
 subroutine suisin
     implicit none
-    integer me, k, ii, it, ilt, nn, ct, nt
+    integer me, k, ii, it, ilt, nn, ct, nt, meli
     real(8) f, sumf, rr    !Equation of Continuity
     real(8), allocatable :: q(:)
     real(8) tmp_wl
@@ -363,7 +370,7 @@ subroutine suisin
     nt = int((unsttime + (dt2+0.000001d0)) / (dt2+0.000001d0))
 
     !$omp parallel do default(shared) &
-    !$omp private(f,sumf,k,me,ilt,nn,tmp_wl,rr) &
+    !$omp private(f,sumf,k,me,ilt,nn,tmp_wl,rr, meli) &
     !$omp reduction(+:unst_tmp_error, unst_tmp_ds)
     do me = 1, mesh
         if(inf(me) == 0) cycle
@@ -377,9 +384,10 @@ subroutine suisin
             ! uniform flow(dstype:3) added by d.baba
             elseif (ds_inf(me)==3) then
                 do k = 1, ko(me)
-                    if (limesh(melink(me, k),1) /= ds_upme(me) .and. limesh(melink(me, k),2) /= ds_upme(me)) then
-                        um(melink(me, k)) = um(melink(ds_upme(me), k))
-                        vn(melink(me, k)) = vn(melink(ds_upme(me), k))
+                    meli = melink(k, me)
+                    if (limesh(meli,1) /= ds_upme(me) .and. limesh(meli,2) /= ds_upme(me)) then
+                        um(meli) = um(melink(k, ds_upme(me)))
+                        vn(meli) = vn(melink(k, ds_upme(me)))
                     endif
                 enddo
                 unsth(me) = unsth(ds_upme(me))
@@ -392,9 +400,10 @@ subroutine suisin
         ! inflow by flux
         sumf = 0.0d0
         do k = 1, ko(me)
-            umbeta(melink(me, k)) = um(melink(me, k))*rbeta(melink(me, k))
-            vnbeta(melink(me, k)) = vn(melink(me, k))*rbeta(melink(me, k))
-            f = umbeta(melink(me, k))*node_dy(me,k) - vnbeta(melink(me, k))*node_dx(me,k)
+            meli = melink(k, me)
+            umbeta(meli) = um(meli)*rbeta(meli)
+            vnbeta(meli) = vn(meli)*rbeta(meli)
+            f = umbeta(meli)*node_dy(k, me) - vnbeta(meli)*node_dx(k, me)
             sumf = sumf + f
         enddo
 
@@ -507,8 +516,8 @@ subroutine velocity
         umm(me) = 0.0d0
         vnm(me) = 0.0d0
     do k = 1, ko(me)
-        umm(me) = umm(me) + um(melink(me, k))*rtuv_x(me, k)
-        vnm(me) = vnm(me) + vn(melink(me, k))*rtuv_y(me, k)
+        umm(me) = umm(me) + um(melink(k, me))*rtuv_x(k, me)
+        vnm(me) = vnm(me) + vn(melink(k, me))*rtuv_y(k, me)
     enddo
     enddo
     !$omp end parallel do
@@ -517,14 +526,14 @@ subroutine velocity
     !$omp parallel do default(shared),private(i, k)
     do i = 1, ids2mesh
         do k = 1, ko(ds2me(i))
-            if(limesh(melink(ds2me(i), k),2)==0) then
-                um(melink(ds2me(i), k)) = umm(ds2me(i))
-                vn(melink(ds2me(i), k)) = vnm(ds2me(i))
+            if(limesh(melink(k, ds2me(i)),2)==0) then
+                um(melink(k, ds2me(i))) = umm(ds2me(i))
+                vn(melink(k, ds2me(i))) = vnm(ds2me(i))
                 if(unsth(ds2me(i)) < th) then
-                if((umm(ds2me(i))*node_dy(ds2me(i),k) - &
-                     vnm(ds2me(i))*node_dx(ds2me(i),k)) > 0.0d0) then
-                        um(melink(ds2me(i), k)) = 0.0d0
-                        vn(melink(ds2me(i), k)) = 0.0d0
+                if((umm(ds2me(i))*node_dy(k, ds2me(i)) - &
+                     vnm(ds2me(i))*node_dx(k, ds2me(i))) > 0.0d0) then
+                        um(melink(k, ds2me(i))) = 0.0d0
+                        vn(melink(k, ds2me(i))) = 0.0d0
                 endif
                 endif
             endif

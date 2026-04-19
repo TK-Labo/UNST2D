@@ -48,7 +48,7 @@ make
 After preparing the necessary input files, run the following command to start the calculation:
 
 ```bash
-./RRI_UNST.exe
+./UNST.exe
 ```
   
 ## License
@@ -64,6 +64,6 @@ Kenji Kawaike & TK Labo
 TK Labo Members:
 
 - Koki Yamamura 2021-2025
-- Daiki Baba 2022-
+- Daiki Baba 2022-2026
 - Shunji Nishino 2023-
 - Kentaro Taki 2017-

@@ -283,20 +283,20 @@ subroutine unst_rdat
     write(*,*) ' - mesh : ', mesh, 'grids'
     write(*,*) '   > interpolation type:', sep_rtuv
 
-    allocate(ko(mesh), menode(mesh, 6), melink(mesh, 6), smesh(mesh), xmesh(mesh), ymesh(mesh))
-    allocate(rtuv_x(mesh, 6), rtuv_y(mesh, 6))
+    allocate(ko(mesh), menode(6, mesh), melink(6, mesh), smesh(mesh), xmesh(mesh), ymesh(mesh))
+    allocate(rtuv_x(6, mesh), rtuv_y(6, mesh))
     do me = 1, mesh
-        read(fmesh_unit, 1232) ko(me), (menode(me, k), k = 1, ko(me))
-        read(fmesh_unit, 1233) (melink(me, k), k = 1, ko(me))
+        read(fmesh_unit, 1232) ko(me), (menode(k, me), k = 1, ko(me))
+        read(fmesh_unit, 1233) (melink(k, me), k = 1, ko(me))
         read(fmesh_unit, 1234) smesh(me), xmesh(me), ymesh(me)
         if (sep_rtuv==0) then
             ! weight distance only
-            read(fmesh_unit, 1235) (rtuv_x(me, k), k = 1, ko(me))
-            rtuv_y(me, 1:ko(me)) = rtuv_x(me, 1:ko(me))
+            read(fmesh_unit, 1235) (rtuv_x(k, me), k = 1, ko(me))
+            rtuv_y(1:ko(me), me) = rtuv_x(1:ko(me), me)
         elseif (sep_rtuv==1) then
             ! weight distance and angle added by d.baba
-            read(fmesh_unit, 1235) (rtuv_x(me, k), k = 1, ko(me))
-            read(fmesh_unit, 1235) (rtuv_y(me, k), k = 1, ko(me))
+            read(fmesh_unit, 1235) (rtuv_x(k, me), k = 1, ko(me))
+            read(fmesh_unit, 1235) (rtuv_y(k, me), k = 1, ko(me))
         endif
     enddo
 1232 format(8x, i5, 5x, 20i8)
@@ -470,7 +470,7 @@ subroutine unst_rdat
     allocate(unsth(mesh), ho(mesh), hl(link), hmax(mesh), uummax(mesh), vvmmax(mesh))
     allocate(umm(0:mesh), vnm(0:mesh))
     allocate(uum(mesh), vvm(mesh))
-    allocate(node_dx(mesh,6), node_dy(mesh,6))
+    allocate(node_dx(6, mesh), node_dy(6, mesh))
     allocate(rnof(mesh), qr_sum(mesh), riv_eq(mesh))
     allocate(um(link), umo(link), uu(link), vn(link), vno(link), vv(link))
     allocate(umbeta(link), vnbeta(link))
@@ -836,18 +836,18 @@ subroutine dsmeshdat
             sum_rtuv_x(dsme(i)) = 0.0d0
             sum_rtuv_y(dsme(i)) = 0.0d0
             do k = 1, ko(dsme(i))
-                if (limesh(melink(dsme(i),k),2)/=0) then
-                    sum_rtuv_x(dsme(i)) = sum_rtuv_x(dsme(i)) + rtuv_x(dsme(i),k)
-                    sum_rtuv_y(dsme(i)) = sum_rtuv_y(dsme(i)) + rtuv_y(dsme(i),k)
+                if (limesh(melink(k, dsme(i)),2)/=0) then
+                    sum_rtuv_x(dsme(i)) = sum_rtuv_x(dsme(i)) + rtuv_x(k, dsme(i))
+                    sum_rtuv_y(dsme(i)) = sum_rtuv_y(dsme(i)) + rtuv_y(k, dsme(i))
                 endif
             enddo
             do k = 1, ko(dsme(i))
-                if (limesh(melink(dsme(i),k),2)/=0) then
-                    rtuv_x(dsme(i),k) = rtuv_x(dsme(i), k)/sum_rtuv_x(dsme(i))
-                    rtuv_y(dsme(i),k) = rtuv_y(dsme(i), k)/sum_rtuv_y(dsme(i))
+                if (limesh(melink(k, dsme(i)),2)/=0) then
+                    rtuv_x(k, dsme(i)) = rtuv_x(k, dsme(i))/sum_rtuv_x(dsme(i))
+                    rtuv_y(k, dsme(i)) = rtuv_y(k, dsme(i))/sum_rtuv_y(dsme(i))
                 else
-                    rtuv_x(dsme(i),k) = 0.0d0
-                    rtuv_y(dsme(i),k) = 0.0d0
+                    rtuv_x(k, dsme(i)) = 0.0d0
+                    rtuv_y(k, dsme(i)) = 0.0d0
                 endif
             enddo
             
@@ -857,11 +857,11 @@ subroutine dsmeshdat
             if (ko(dsme(i))==4) then
                 do k = 1, ko(dsme(i))
                     ! set upper meshid
-                    if (limesh(melink(dsme(i), k),2) == 0) then
-                        if (limesh(melink(dsme(i), mod(k+1,4)+1),1) == dsme(i)) then
-                            ds_upme(dsme(i)) = limesh(melink(dsme(i), mod(k+1,4)+1),2)
+                    if (limesh(melink(k, dsme(i)),2) == 0) then
+                        if (limesh(melink(mod(k+1,4)+1, dsme(i)),1) == dsme(i)) then
+                            ds_upme(dsme(i)) = limesh(melink(mod(k+1,4)+1, dsme(i)),2)
                         else
-                            ds_upme(dsme(i)) = limesh(melink(dsme(i), mod(k+1,4)+1),1)
+                            ds_upme(dsme(i)) = limesh(melink(mod(k+1,4)+1, dsme(i)),1)
                         endif
                         !write(*,*) dsme(i) , '-' , dsupper(dsme(i))
                     endif

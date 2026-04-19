@@ -12,6 +12,7 @@ subroutine paddyinitiald
     use unst_globals_mod
     implicit none
     integer i, pa, k, ii
+    integer paid  ! v1.0.5.1
     real(8), allocatable :: hpa(:), gradp(:), speedp(:) 
     real(8), allocatable :: ttpA(:), ttpB(:)
 
@@ -29,10 +30,11 @@ subroutine paddyinitiald
     paddycount_num = 0
     psmesh = 0.0d0
     do i = 1, mesh
-        if (paddyid(i) > 0) then
-        psmesh(paddyid(i)) = psmesh(paddyid(i)) + smesh(i)
-        paddycount_num(paddyid(i)) = paddycount_num(paddyid(i)) + 1
-        max_paddycount_num = max(max_paddycount_num, paddycount_num(paddyid(i)))
+        paid = paddyid(i)  ! v1.0.5.1
+        if (paid > 0) then
+            psmesh(paid) = psmesh(paid) + smesh(i)
+            paddycount_num(paid) = paddycount_num(paid) + 1
+            max_paddycount_num = max(max_paddycount_num, paddycount_num(paid))
         endif
     enddo
 
@@ -40,10 +42,11 @@ subroutine paddyinitiald
     allocate(paddyid2mesh(paddy, max_paddycount_num))
     paddyid2mesh = 0
     do i = 1, mesh
-        if (paddyid(i) > 0) then
-            do k = 1, paddycount_num(paddyid(i))
-                if (paddyid2mesh(paddyid(i), k) == 0) then
-                    paddyid2mesh(paddyid(i), k) = i
+        paid = paddyid(i)  ! v1.0.5.1
+        if (paid > 0) then
+            do k = 1, paddycount_num(paid)
+                if (paddyid2mesh(paid, k) == 0) then
+                    paddyid2mesh(paid, k) = i
                     exit
                 endif
             enddo
@@ -99,7 +102,7 @@ subroutine paddyinitiald
         endif
     enddo
 
-    outa = (((p_data / 2.0d0) ** 2.0d0) * pi)
+    outa = (((p_data * 0.5d0) ** 2.0d0) * pi)  ! multiplication v1.0.5.1
 
     deallocate(hpa, gradp, speedp, ttpA, ttpB)
 
@@ -148,36 +151,46 @@ subroutine paddyflow
             ! device=0(not paddy field dam)
             if (device(pa) == 0) then
                 qp1 = &
-                    0.6d0 * (2.0d0 / 3.0d0) * sqrt(2.0d0 * gg) * ww1 * ((hhp - wh1) ** (3.0d0 / 2.0d0))
+                    0.40d0 * sqrt(2.0d0 * gg) * ww1 * ((hhp - wh1) ** (1.50d0))  ! multiplication v1.0.5.1
+                    ! 0.6d0 * (2.0d0 / 3.0d0) * sqrt(2.0d0 * gg) * ww1 * ((hhp - wh1) ** (3.0d0 / 2.0d0))
             ! device=1(機能一体型)
             elseif (device(pa) == 1) then
                 if (hhp <= (wh1 + wh2)) then
                     if (wtyp == 1) then
                         qp1 = &
-                            0.6d0 * (2.0d0 / 3.0d0) * sqrt(2.0d0 * gg) * ww2 * ((hhp - wh1) ** (3.0d0 / 2.0d0))
+                            0.40d0 * sqrt(2.0d0 * gg) * ww2 * ((hhp - wh1) ** (1.50d0))  ! multiplication v1.0.5.1
+                            ! 0.6d0 * (2.0d0 / 3.0d0) * sqrt(2.0d0 * gg) * ww2 * ((hhp - wh1) ** (3.0d0 / 2.0d0))
                     elseif (wtyp == 2) then
-                        qp1 = 0.6d0 * (8.0d0 / 15.0d0) * tan((ca * pi) / 180.0d0) * sqrt(2.0d0 * gg) &
-                                * ((hhp - wh1) ** (5.0d0 / 2.0d0))
+                        qp1 = 0.320d0 * tan((ca * pi) / 180.0d0) * sqrt(2.0d0 * gg) &  ! multiplication v1.0.5.1
+                                * ((hhp - wh1) ** (2.50d0))
+                        ! qp1 = 0.6d0 * (8.0d0 / 15.0d0) * tan((ca * pi) / 180.0d0) * sqrt(2.0d0 * gg) &
+                        !         * ((hhp - wh1) ** (5.0d0 / 2.0d0))
                     endif
                 elseif (hhp > (wh1 + wh2)) then
                     if (wtyp == 1) then
-                        qp1 = 0.6d0 * (2.0d0 / 3.0d0) * sqrt(2.0d0 * gg) * ww2 * (wh2 ** (3.0d0 / 2.0d0)) + &
-                            0.6d0 * (2.0d0 / 3.0d0) * sqrt(2.0d0 * gg) * ww1 * ((hhp - (wh1 + wh2)) ** (3.0d0 / 2.0d0))
+                        qp1 = 0.40d0 * sqrt(2.0d0 * gg) * ww2 * (wh2 ** (1.50d0)) + &  ! multiplication v1.0.5.1
+                            0.40d0 * sqrt(2.0d0 * gg) * ww1 * ((hhp - (wh1 + wh2)) ** (1.50d0))
+                        ! qp1 = 0.6d0 * (2.0d0 / 3.0d0) * sqrt(2.0d0 * gg) * ww2 * (wh2 ** (3.0d0 / 2.0d0)) + &
+                        !     0.6d0 * (2.0d0 / 3.0d0) * sqrt(2.0d0 * gg) * ww1 * ((hhp - (wh1 + wh2)) ** (3.0d0 / 2.0d0))
                     elseif (wtyp == 2) then
-                        qp1 = 0.6d0 * (8.0d0 / 15.0d0) * tan((ca * pi) / 180.0d0) * sqrt(2.0d0 * gg) * (wh2 ** (5.0d0 / 2.0d0)) + &
-                            0.6d0 * (2.0d0 / 3.0d0) * sqrt(2.0d0 * gg) * ww1 * ((hhp - (wh1 + wh2)) ** (3.0d0 / 2.0d0))
+                        qp1 = 0.32d0 * tan((ca * pi) / 180.0d0) * sqrt(2.0d0 * gg) * (wh2 ** (2.50d0)) + &  ! multiplication v1.0.5.1
+                            0.40d0 * sqrt(2.0d0 * gg) * ww1 * ((hhp - (wh1 + wh2)) ** (1.50d0))
+                        ! qp1 = 0.6d0 * (8.0d0 / 15.0d0) * tan((ca * pi) / 180.0d0) * sqrt(2.0d0 * gg) * (wh2 ** (5.0d0 / 2.0d0)) + &
+                        !     0.6d0 * (2.0d0 / 3.0d0) * sqrt(2.0d0 * gg) * ww1 * ((hhp - (wh1 + wh2)) ** (3.0d0 / 2.0d0))
                     end if
                 endif
             ! device=2(機能分離型)
             elseif (device(pa) == 2) then
                 if (hhp <= (lh - dld)) then
                     qp1 = &
-                        0.6d0 * (2.0d0 / 3.0d0) * sqrt(2.0d0 * gg) * ww1 * ((hhp - wh1) ** (3.0d0 / 2.0d0))
+                        0.40d0 * sqrt(2.0d0 * gg) * ww1 * ((hhp - wh1) ** (1.50d0))  ! multiplication v1.0.5.1
+                        ! 0.6d0 * (2.0d0 / 3.0d0) * sqrt(2.0d0 * gg) * ww1 * ((hhp - wh1) ** (3.0d0 / 2.0d0))
                     qp2 = 0.6d0 * (((dd / 2.0d0) ** 2.0d0) * pi) * sqrt(2.0d0 * gg * (hhp + unstdh))                      
                     qp1 = min(qp1, qp2)
                 elseif (hhp >= (lh - dld)) then
-                    qp1 = 0.6d0 * (((dd / 2.0d0) ** 2.0d0) * pi) * sqrt(2.0d0 * gg * (hhp + unstdh)) + &
-                    0.6d0 * (2.0d0 / 3.0d0) * sqrt(2.0d0 * gg) * ww1 * ((hhp - (lh - dld)) ** (3.0d0 / 2.0d0))
+                    qp1 = 0.6d0 * (((dd / 2.0d0) ** 2.0d0) * pi) * sqrt(2.0d0 * gg * (hhp + unstdh)) + &  ! multiplication v1.0.5.1
+                    0.40d0 * sqrt(2.0d0 * gg) * ww1 * ((hhp - (lh - dld)) ** (1.50d0))
+                    ! 0.6d0 * (2.0d0 / 3.0d0) * sqrt(2.0d0 * gg) * ww1 * ((hhp - (lh - dld)) ** (3.0d0 / 2.0d0))
                 end if
             else
                 print *, "error: please enter device"
