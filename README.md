@@ -36,11 +36,16 @@ The project consists of the following main directories and files:
   - Makefile
 
 ## Compile
-UNST2Dによる計算を行うプログラム`UNST.exe`を生成:  
-Generate the program `UNST.exe` to perform calculations using UNST2D:  
+UNST2Dによる計算を行うプログラム`UNST2D.exe`を生成:  
+Generate the program `UNST2D.exe` to perform calculations using UNST2D:  
 
+- make コマンドが使用可能な場合 make command is available
 ```bash
 make
+```
+-(Windows) make コマンドが使用不可な場合 make command is unavailable
+```bash
+.\make_win.bat
 ```
   
 ## Run  
@@ -48,7 +53,7 @@ make
 After preparing the necessary input files, run the following command to start the calculation:
 
 ```bash
-./UNST.exe
+./UNST2D.exe
 ```
   
 ## License
