@@ -105,7 +105,7 @@ subroutine unst_initiald
     if(plantDa==1) then
         !$omp parallel do default(shared),private(li, plant_lambda_link)
         do li = 1, link
-            if(limesh(li, 2)/=0) cycle
+            if(limesh(li, 2)==0) cycle
             if(plant_lambda(limesh(li, 1))>0.0d0 .and. plant_lambda(limesh(li, 2))>0.0d0) then
                 plant_lambda_link = 0.5d0*(plant_lambda(limesh(li, 1))+plant_lambda(limesh(li, 2)))
                 vr_hv(li) = 0.5d0*(plant_hv_array(limesh(li, 1))+plant_hv_array(limesh(li, 2)))
@@ -129,7 +129,7 @@ subroutine unst_initiald
     ! option : plantFN v.1.0.5.1
     ! if(plantFN==1) then
     !     do li = 1, link
-    !         if(limesh(li,2)/=0) cycle
+    !         if(limesh(li,2)==0) cycle
     !         ! N
     !         if(plantN_array(limesh(li, 1))>0.0d0 .or. plantN_array(limesh(li, 2))>0.0d0) then
     !             vr_N(li) = 0.5d0 * (plantN_array(limesh(li, 1)) + plantN_array(limesh(li, 2)))
