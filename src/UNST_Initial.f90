@@ -83,7 +83,7 @@ subroutine unst_initiald
             mesh_dy = ymesh(limesh(li, 2)) - ymesh(limesh(li, 1))
             dl(li) = sqrt(mesh_dx**2 + mesh_dy**2)
             blink(li) = sqrt((dnox(linode(li, 1)) - dnox(linode(li, 2))) **2 &
-                             + (dnox(linode(li, 1)) - dnox(linode(li, 2)) ** 2))
+                             + (dnoy(linode(li, 1)) - dnoy(linode(li, 2)) ** 2))
         endif
     enddo
     !$omp end parallel do
