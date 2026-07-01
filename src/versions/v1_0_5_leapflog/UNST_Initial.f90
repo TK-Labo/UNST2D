@@ -14,10 +14,7 @@ subroutine unst_initiald
     ! Initialize time param
     !-----------------------
     unsttime = 0.0d0
-    disk_flag = .false.
-    disp_flag = .false.
-    next_disk_t = 0.0d0
-    next_disp_t = 0.0d0
+    mstep = 0
 
     !---------------------
     ! Initialize variable
@@ -76,8 +73,6 @@ subroutine unst_initiald
     vno = 0.0d0
     lhan = 0
     lhano = 0
-    um_n = 0.0d0
-    vn_n = 0.0d0
 
     ! shape param
     !$omp parallel do default(shared),private(li, mesh_dx, mesh_dy)

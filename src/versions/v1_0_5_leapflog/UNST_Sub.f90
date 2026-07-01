@@ -350,17 +350,17 @@ end subroutine flux
 !-------------------------------------------------------------------------------------
 subroutine suisin
     implicit none
-    integer me, k, ii, it, ilt, nn, ct, nt
+    integer me, k, ii, it, ilt, nn, ct, nt, meli
     real(8) f, sumf, rr    !Equation of Continuity
     real(8), allocatable :: q(:)
     real(8) tmp_wl
-    real(8) unst_tmp_error
-    integer meli  ! v.1.0.5.1
+    real(8) unst_tmp_error, unst_tmp_ds
 
     allocate(q(mesh))
 
     if (paddydam==1) paddy_q = 0.0d0
     unst_tmp_error = 0.0d0
+    unst_tmp_ds = 0.0d0
 
     it = int(unsttime/dtrain) + 1
 
@@ -371,7 +371,7 @@ subroutine suisin
 
     !$omp parallel do default(shared) &
     !$omp private(f,sumf,k,me,ilt,nn,tmp_wl,rr, meli) &
-    !$omp reduction(+:unst_tmp_error)
+    !$omp reduction(+:unst_tmp_error, unst_tmp_ds)
     do me = 1, mesh
         if(inf(me) == 0) cycle
         if(dsmesh==1) then
@@ -417,6 +417,10 @@ subroutine suisin
                 unsth(me) = unsth(me) - etp(paddyid(me))*dt2
                 q(me) = q(me) - (etp(paddyid(me))*dt2 * smesh(me))
             endif
+        endif
+        if(baseo(me)==-9999.0d0) then
+            unst_tmp_ds = unst_tmp_ds + unsth(me) * smesh(me)  ! v.1.0.5
+            unsth(me) = 0.0d0
         endif
 
         ! 浸透モデル
@@ -474,7 +478,8 @@ subroutine suisin
     enddo
     !$omp end parallel do
 
-    unst_error_v = unst_error_v + unst_tmp_error*0.5d0  ! v.1.0.5
+    unst_error_v = unst_error_v + unst_tmp_error  ! v.1.0.5
+    unst_dis_v = unst_dis_v + unst_tmp_ds  ! v.1.0.5
 
     ! calculate paddy field dam outflow
     if (paddydam==1) call paddyflow
@@ -490,25 +495,9 @@ end subroutine suisin
 !----------------------------
 ! Calculate velocity
 !----------------------------
-subroutine velocity(stage)
+subroutine velocity
     implicit none
-    integer, intent(in) :: stage
     integer li, me, k, i
-    real(8) :: unst_tmp_ds
-
-    if(stage==2) then
-        unst_tmp_ds = 0.0d0
-        !$omp parallel do default(shared),private(me),reduction(+:unst_tmp_ds)
-        do me = 1, mesh
-            if(baseo(me)<=-9999.0d0) then
-                unst_tmp_ds = unst_tmp_ds + unsth(me) * smesh(me)  ! v.1.0.5
-                unsth(me) = 0.0d0
-            endif
-        enddo
-        !$omp end parallel do
-
-        unst_dis_v = unst_dis_v + unst_tmp_ds
-    endif
 
     ! hl calculation
     !$omp parallel do default(shared),private(li)
@@ -698,49 +687,5 @@ subroutine limit_front
     enddo
     !$omp end parallel do
 end subroutine limit_front
-
-subroutine unstdt_adapt
-    integer me, k, li
-    real(8) tmp_sp, tmp_unstdt, tmp_mindt, nowdt
-
-    nowdt = dt2
-    tmp_mindt = unstdt
-    tmp_unstdt = dt2
-    !$omp parallel do default(shared), private(me, k, li, tmp_sp, tmp_unstdt), reduction(min: tmp_mindt) 
-    do me = 1, mesh
-        if(unsth(me)>th) then
-            tmp_sp = 1.0d-4
-            do k = 1, ko(me)
-                li = melink(k, me)
-                if(hl(li)>th) tmp_sp = max(tmp_sp, (sqrt(uu(li)**2 + vv(li)**2) + sqrt(gg*hl(li))))
-            enddo
-            tmp_unstdt = sqrt(smesh(me))/tmp_sp
-            tmp_mindt = min(tmp_mindt, tmp_unstdt)
-        endif
-    enddo
-    !$omp end parallel do
-
-    dt2 = max(min_unstdt, tmp_mindt*unst_cfl)
-    dt2 = min(unstdt, dt2)
-    dispdt = dt2
-
-    if(d1riv==1) dt2 = min(dt2, nowdt)
-
-    if(unsttime+dt2>=next_disp_t) then
-        dt2 = max(next_disp_t - unsttime, 1.0d-6)
-        disp_flag = .true.
-        next_disp_t = next_disp_t + dpout
-    else
-        disp_flag = .false.
-    endif
-    if(unsttime+dt2>=next_disk_t) then
-        dt2 = max(next_disk_t - unsttime, 1.0d-6)
-        disk_flag = .true.
-        next_disk_t = next_disk_t + dkout
-    else
-        disk_flag = .false.
-    endif
-
-end subroutine
 
 end module unst_cal_sub

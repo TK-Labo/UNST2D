@@ -31,6 +31,7 @@ subroutine unst_rdat
     integer n, numrn
     integer sep_rtuv
 
+    real(8) dkout, dpout
     real(8) tday, thour, tmin, tsec
     integer ino_qin, t ! UNST-2D only
     integer nx_rain, ny_rain, tt_max_rain
@@ -222,8 +223,10 @@ subroutine unst_rdat
     ! Step2 : Set constant param
     !----------------------------
     timmax = 3600.0d0*24.0d0*tday + 3600.d0*thour + 60.d0*tmin + tsec
-    dt2 = unstdt
-    dispdt = dt2  ! RK2 dt (for display)
+    dt2 = 2.0d0*unstdt
+
+    lpout = int(dpout/unstdt)  ! display write dt
+    lkout = int(dkout/unstdt)  ! disk write dt
 
     !--------------------------
     ! Step3 : Read input files
@@ -474,7 +477,6 @@ subroutine unst_rdat
     allocate(lhan(link), lhano(link))
     allocate(rnx(link), dl(link))
     allocate(blink(link))
-    allocate(unsth_n(mesh), um_n(link), vn_n(link))
 
 end subroutine unst_rdat
 
@@ -500,19 +502,6 @@ subroutine plantFNdat
         read(fplantN_unit, *) plantN_array(me)
     enddo
     close(fplantN_unit)
-
-    ! development v.1.0.5.1
-    ! open(newunit = fplantAlld_unit, file = fplantAlld, action = 'read')
-    ! do me = 1, mesh
-    !     read(fplantAlld_unit, *) plantAl_array(me), plantl_array(me), plantdd_array(me)
-    ! enddo
-    ! close(fplantAlld_unit)
-    !
-    ! open(newunit = fplantC_unit, file = fplantC, action = 'read')
-    ! do me = 1, mesh
-    !     read(fplantC_unit, *) stemCd_array(me), leavesCdl_array(me), leavesCsl_array(me)
-    ! enddo
-    ! close(fplantC_unit)
 
 end subroutine plantFNdat
 
