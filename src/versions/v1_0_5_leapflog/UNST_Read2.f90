@@ -157,7 +157,6 @@ subroutine d1rivdat(timmax, dtq, mesh, baseo, frivcntl)
     allocate(depth_1d(ndan))
     allocate(rbed_1d(ndan), rzmax_1d(ndan))
     allocate(dan_record(ndan))
-    allocate(q_n_1d(ndan), a_n_1d(ndan), subq_n_all(ndan))
     ! - - -
     allocate(n_tbl(ndan))
     ! - - -
@@ -644,7 +643,7 @@ subroutine read_oudan_header(line, kp, r)
             exit
         else
             tmp_value(i) = line(j:j+tmp_idx-2)
-            j = j + tmp_idx  ! ← ここを修正（次のカンマの次の文字へ）
+            j = j + tmp_idx
         endif
     enddo
 
@@ -678,15 +677,11 @@ subroutine read_oudan_data(line, xc, zc, r)
     
 end subroutine read_oudan_data
 
-subroutine d1rivinitiald(d2dt, unst_cfl)
+subroutine d1rivinitiald
     implicit none
-    real(8), intent(in) :: d2dt, unst_cfl
     integer finit_unit
     integer i, ii, n, idummy, init_type
     real(8) init_depth
-    
-    d1maxdt = d2dt
-    d1_cfl = unst_cfl
 
     h_1d = 0.0d0
     vv_1d = 0.0d0
@@ -707,14 +702,12 @@ subroutine d1rivinitiald(d2dt, unst_cfl)
     pumpq_1d = 0.0d0
     sluiceq_1d = 0.0d0
     up_q_1d = 0.0d0
-    q_n_1d = 0.0d0
-    a_n_1d = 0.0d0
-    subq_n_all = 0.0d0
 
     open(newunit=finit_unit, file = finit, action = 'read')
     ii = 1
     read(finit_unit, *) init_type
     if(init_type==0) then
+        ! only fractional
         do n = 1, nriv
             read(finit_unit, *) idummy, init_depth
             do i = ii, ii+riv_ndan(n)-1

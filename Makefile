@@ -64,7 +64,7 @@ OBJECTS = $(UNST_OBJECTS) $(MAIN_OBJECT)
 SOURCES = $(wildcard $(UNST_DIR)/*$(FSUFFIX))
 
 # 実行ファイル名
-TARGET = unst.exe
+TARGET = UNST2D.exe
 
 #------------------------------------------------------------------------------
 # ビルドルール

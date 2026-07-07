@@ -17,14 +17,13 @@ real(8), parameter :: rivth = 1.0d-3
 real(8), parameter :: thd_1d = 1.0d-4
 real(8), parameter :: tha_1d = 1.0d-6
 real(8), parameter :: tha2_1d = 1.0d-4
-real(8), parameter :: min_1ddt = 0.01d0
 
 !------------
 ! time param
 !------------
 integer spout  ! dispout in spin up
 real(8) unsttime_r
-real(8) rivdt, d1maxdt, d1_cfl
+real(8) rivdt
 real(8) d1_spin_ups
 
 !-------------
@@ -43,7 +42,6 @@ real(8), allocatable :: vv_1d(:)           ! velocity
 real(8), allocatable :: q_1d(:)  ! volume
 real(8), allocatable :: a_1d(:), r_1d(:)   ! area, radius
 real(8), allocatable :: b_1d(:), rn_1d(:)  ! width, roughness
-real(8), allocatable :: q_n_1d(:), a_n_1d(:), subq_n_all(:) 
 
 real(8), allocatable :: h_1dmax(:), vv_1dmax(:)  ! max h, vv
 

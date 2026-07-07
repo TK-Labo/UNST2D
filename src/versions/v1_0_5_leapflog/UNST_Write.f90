@@ -109,7 +109,7 @@ contains
             open(newunit = fd1out_unit, file = fd1out, action = 'write')
             open(newunit = fd1mx_unit, file = fd1mx, action = 'write')
             write(fd1out_unit, '(A)') &
-                '  rid     kp(m)     wl(m)  depth(m)   q(m3/s) velo(m/s)  subq(m3)  area(m2)'
+                '  rid     kp(m)     wl(m)  depth(m)   q(m3/s) velo(m/s)  subq(m3)'
             write(fd1mx_unit, '(A)') &
                 '  rid     kp(m)     wl(m)  depth(m)   q(m3/s) velo(m/s)  subq(m3)'
         endif
@@ -176,7 +176,7 @@ contains
         enddo
         !$omp end parallel do
 
-        write(*, 1000) unsttime, sv, unst_error_v, unst_dis_v, dispdt
+        write(*, 1000) unsttime, sv, unst_error_v, unst_dis_v
 1000 format('UNST------   unsttime=', f8.0, '(s)', 10f18.4)
 ! 1005 format('   unsttime=', f8.0, '(s)', 2f18.4, 4i10)
 ! 1099 format('   unsttime=', f8.0, '(s)', 10f21.7)

@@ -11,21 +11,14 @@ real(8), parameter :: pi = 3.14d0   ! pi
 real(8), parameter :: gg = 9.8d0    ! gravitational acceleration
 real(8), parameter :: th = 1.0d-3   ! Limit depth of movement
 real(8), parameter :: fita = 0.5d0  !
-real(8), parameter :: vr_maxfh_per = 0.2d0
-real(8), parameter :: vr_startf = 0.12d0
-real(8), parameter :: min_unstdt = 0.01d0
-real(8), parameter :: unst_cfl = 0.6d0
 
 ! =============
 !  time & step 
 ! =============
+integer mstep
 integer lkout, lpout
 real(8) unstdt, unsttime, timmax
 real(8) dt2, dtq, dtrain
-real(8) dkout, dpout
-real(8) next_disp_t, next_disk_t
-logical disp_flag, disk_flag
-real(8) dispdt
 
 ! ======
 !  grid
@@ -46,7 +39,6 @@ real(8), allocatable :: unsth(:), ho(:), hmax(:)   ! depth
 real(8), allocatable :: umm(:), uum(:), uummax(:)  ! flux & speed
 real(8), allocatable :: vnm(:), vvm(:), vvmmax(:)  ! flux & speed
 real(8), allocatable :: qr_sum(:)
-real(8), allocatable :: unsth_n(:)
 ! -- link param & condition --
 integer, allocatable :: limesh(:,:), linode(:,:)  ! components(mesh & link)
 real(8), allocatable :: scv(:)  !
@@ -58,7 +50,6 @@ real(8), allocatable :: hl(:)  ! depth
 real(8), allocatable :: um(:), umo(:), uu(:)  ! flux & speed
 real(8), allocatable :: vn(:), vno(:), vv(:)  ! flux & speed
 integer, allocatable :: lhan(:), lhano(:)   ! interpolarate switch
-real(8), allocatable :: um_n(:), vn_n(:)
 ! -- node param --
 real(8), allocatable :: dnox(:), dnoy(:)
 
